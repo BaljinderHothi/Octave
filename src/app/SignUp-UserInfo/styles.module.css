@@ -1,15 +1,72 @@
-/* General form container */
-.formContainer {
+.container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 97vh;
-  background-color: #bbaccf; /*f8f9fa*/
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background-color: #bbaccf;
+  overflow: hidden;
+  position: fixed; /* Keep fixed to prevent any scrolling */
 }
 
-<<<<<<< Updated upstream
-.form {
-  width: 400px;
+.header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%;
+  z-index: 10;
+}
+
+.content {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.imageSection {
+  width: 50%;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.imageWrapper {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.spinnerImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.formSection {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 1rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #222;
+  flex-shrink: 0;
+}
+
+.formContainer {
+  width: 100%;
+  max-width: 400px;
+  max-height: calc(100vh - 200px);
   padding: 20px;
   background: white;
   border-radius: 8px;
@@ -17,28 +74,34 @@
   display: flex;
   flex-direction: column;
   gap: 7px;
+  overflow: auto; /* Allow form to scroll if needed */
 }
 
-/* Labels for inputs */
+.form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
 .label {
   font-weight: normal;
   font-size: 15px;
   color: #3d3c3c;
-  margin-bottom: -7px;
-  margin-top: 10px;
+  margin-bottom: -5px;
+  margin-top: 5px;
 }
 
-/* Input fields */
 .input {
   width: 100%;
-  padding: 10px;
+  padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 14px;
   color: #000;
+  box-sizing: border-box;
 }
 
-/* First Name & Last Name Layout */
 .nameContainer {
   display: flex;
   gap: 10px;
@@ -48,15 +111,14 @@
   flex: 1;
 }
 
-/* Date of Birth dropdown styling */
 .dobContainer {
   display: flex;
   justify-content: space-between;
 }
 
 .dropdown {
-  padding: 7px;
-  border: 2px solid #ccc;
+  padding: 6px;
+  border: 1px solid #ccc;
   border-radius: 5px;
   background-color: #f0f0f0;
   color: #333;
@@ -70,89 +132,32 @@
   outline: none;
 }
 
-/* Buttons */
 .signUpButton {
   background-color: #007bff;
   color: white;
-  padding: 10px;
+  padding: 8px;
   border: none;
   border-radius: 5px;
-  font-size: 16px;
+  font-size: 15px;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .signUpButton:hover {
   background-color: #0056b3;
 }
-=======
-  
-  .dropdown:focus {
-    border-color: #868282; 
-    outline: none;
-  }
-  
-  
-  .signUpButton {
-    background: black;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-  }
-  
-  .signUpButton:hover {
-    background: #333;
-  }
-  .container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    background: var(--bg-color); 
-  }
-  
-  .header {
-    display: flex;
-    justify-content: flex-end;
-    padding: 1rem;
-   
-  }
-  
-  .content {
-    flex: 1;
-    display: flex;
-  }
-  
-  .imageSection {
-    flex: 1; 
-    overflow: hidden;
-  }
-  
-  .formSection {
-    flex: 1; 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .title {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: var(--text-color);
-  }
-  
-  .formContainer {
-    background: var(--form-bg);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    width: 400px;
-  }
-  
 
-  
->>>>>>> Stashed changes
+/* Fix for html and body to prevent any default margins causing scroll */
+:global(html),
+:global(body) {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Add global box-sizing to prevent size issues */
+:global(*) {
+  box-sizing: border-box;
+}
