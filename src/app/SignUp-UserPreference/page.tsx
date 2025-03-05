@@ -1,5 +1,6 @@
 import styles from "./styles.module.css";
-import { PreferencesForm } from "./PreferencesForm";
+import PreferencesForm from "./PreferencesForm"; 
+
 
 export default function SignUpPreferencesPage() {
   return (
