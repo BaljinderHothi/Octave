@@ -1,10 +1,4 @@
 
-/*import Settings from "./Settings";
-
-export default function SettingsPage() {
-  return <Settings />;
-}
-*/
 "use client";
 
 import { useState } from "react";
@@ -38,19 +32,19 @@ export default function SettingsPage() {
 
       <h1 className={styles.title}>Edit Profile</h1>
 
-      {/* Profile Picture Upload */}
+      
       <div className={styles.profilePicContainer}>
         <img src={profilePic} alt="Profile" className={styles.profileImage} />
         <input type="file" accept="image/*" onChange={handleProfilePicChange} className={styles.fileInput} />
       </div>
 
-      {/* Bio Section */}
+      
       <div className={styles.bioContainer}>
         <h2>Edit Bio</h2>
         <textarea value={bio} onChange={(e) => setBio(e.target.value)} className={styles.bioInput} />
       </div>
 
-      {/* Save Changes Button */}
+      
       <button onClick={handleSaveChanges} className={styles.saveButton}>Save Changes</button>
     </div>
   );
