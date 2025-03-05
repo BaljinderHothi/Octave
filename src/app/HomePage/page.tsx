@@ -23,30 +23,41 @@ export default function Dashboard() {
     
       <h1 className={styles.title}>Welcome to the Homepage!</h1>
 
-     
+      <div className={styles.searchContainer}>
+        <input type="text" placeholder="Search Activity, food, place...etc" className={styles.searchBar} />
+        <button className={styles.searchButton}>✖</button>
+      </div>
+
+      <div className={styles.recommendationBox}>
+        <h2>Quick recommendations based on your preferences:</h2>
+        <div className={styles.recommendationItem}>
+          <div className={styles.recommendationIcon}></div>
+          <span>Cafe One - 1619 Amsterdam Ave, New York, NY 10031</span>
+        </div>
+        <div className={styles.recommendationItem}>
+          <div className={styles.recommendationIcon}></div>
+          <span>Gyu-Kaku Japanese BBQ - 805 3rd Ave #2, New York, NY 10022</span>
+        </div>
+        <div className={styles.recommendationItem}>
+          <div className={styles.recommendationIcon}></div>
+          <span>Edge NYC - 30 Hudson Yards, New York, NY 10001</span>
+        </div>
+        <div className={styles.recommendationItem}>
+          <div className={styles.recommendationIcon}></div>
+          <span>Space Billiard Pool Hall & Sports Bar - 34 W 32nd St, New York, NY 10001</span>
+        </div>
+      </div>
+
       <button onClick={handleLogout} className={styles.logoutButton}>Log Out</button>
 
-     
-      <div className={styles.recommendationBox}>
-        <h2>Quick Recommendations</h2>
-        <p>(This will be generated based on user preferences in the future)</p>
-      </div>
-
-     
-      <div className={styles.searchContainer}>
-        <input type="text" placeholder="Search for places or activities..." className={styles.searchBar} />
-        <button className={styles.searchButton}>Search</button>
-      </div>
-
-     
       <button onClick={handleGenerateItinerary} className={styles.generateButton}>
         Generate Itinerary
       </button>
 
-
       <button onClick={handleGoToProfile} className={styles.profileButton}>
         Go to Profile
       </button>
+      
     </div>
   );
 }

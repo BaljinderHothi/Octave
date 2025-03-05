@@ -58,7 +58,6 @@ export function PreferencesForm() {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
-      {/* Food Preferences */}
       <fieldset className={styles.category}>
         <legend>Food Preferences:</legend>
         <p>Favorite cuisines and dishes? You can add more in "Other"!</p>
@@ -71,7 +70,6 @@ export function PreferencesForm() {
         <input type="text" placeholder="Other (Type and press Enter)" onKeyDown={(e) => handleCustomInput("food", e)} className={styles.input} />
       </fieldset>
 
-      {/* Activities */}
       <fieldset className={styles.category}>
         <legend>Activities:</legend>
         <p>What activities do you enjoy? You can add more in "Other"!</p>
@@ -84,7 +82,6 @@ export function PreferencesForm() {
         <input type="text" placeholder="Other (Type and press Enter)" onKeyDown={(e) => handleCustomInput("activities", e)} className={styles.input} />
       </fieldset>
 
-      {/* Places to Visit */}
       <fieldset className={styles.category}>
         <legend>Places to Visit:</legend>
         <p>Favorite places to visit? You can add more in "Other"!</p>
@@ -98,7 +95,6 @@ export function PreferencesForm() {
       </fieldset>
 
 
-      {/* Tell Us More! / Custom Preferences */}
       <fieldset className={styles.category}>
         <legend>Tell Us More!:</legend>
         <p>Did we miss anything? Feel free to Write anything you'd like us to know about you. This will train our model to give you better recommendations :)</p>
