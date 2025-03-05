@@ -2,9 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import styles from "./Profile.module.css";
+import { useProfile } from "../Profile/ProfileContext";
 
 export default function Profile() {
   const router = useRouter();
+  const { bio, profilePic } = useProfile(); 
 
   function handleBackToHome() {
     router.push("/HomePage");
@@ -30,11 +32,11 @@ export default function Profile() {
         <button onClick={handleBackToHome} className={styles.backButton}>← Home</button>
 
         <div className={styles.profileHeader}>
-          <img src="/profile-pic.jpg" alt="Profile" className={styles.profileImage} />
+          <img src={profilePic} alt="Profile" className={styles.profileImage} />
           <div className={styles.profileInfo}>
             <h2>@jojolie</h2>
             <p className={styles.interests}>
-              <i>“I love Italian and Chinese cuisine. In my free time, I enjoy rock climbing, walking trails, and going to concerts.”</i>
+              <i>“{bio}”</i>
             </p>
           </div>
         </div>
@@ -55,6 +57,7 @@ export default function Profile() {
 
         <div className={styles.listsSection}>
           <h3>Lists →</h3>
+
           <div className={styles.list}>
             <img src="/list-icons/favorites.png" alt="Favorites" className={styles.listIcon} />
             <div>
