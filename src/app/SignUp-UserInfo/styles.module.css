@@ -1,77 +1,86 @@
-.container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background: #f9f9f9;
-  }
-  
-  .title {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #222;
-  }
-  
-  .formContainer {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    width: 400px;
-  }
-  
-  .label {
-    font-size: 0.9rem;
-    margin-bottom: 5px;
-    color: #333;
-  }
-  
-  .input {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-bottom: 15px;
-    width: 100%;
-    color: #222;
-  }
-  
-  .dobContainer {
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .dropdown {
-    padding: 7px;
-    border: 3px solid #ffffff;
-    border-radius: 3px;
-    background-color: #f0f0f0; 
-    color: #3b3b3b; 
-    font-weight: italic;
-    width: 35%;
-    text-align: center;
-    cursor: pointer;
-  }
+/* General form container */
+.formContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 97vh;
+  background-color: #bbaccf; /*f8f9fa*/
+}
 
-  
-  .dropdown:focus {
-    border-color: #868282; 
-    outline: none;
-  }
-  
-  
-  .signUpButton {
-    background: black;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-  }
-  
-  .signUpButton:hover {
-    background: #333;
-  }
-  
+.form {
+  width: 400px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+/* Labels for inputs */
+.label {
+  font-weight: normal;
+  font-size: 15px;
+  color: #3d3c3c;
+  margin-bottom: -7px;
+  margin-top: 10px;
+}
+
+/* Input fields */
+.input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  color: #000;
+}
+
+/* First Name & Last Name Layout */
+.nameContainer {
+  display: flex;
+  gap: 10px;
+}
+
+.nameContainer div {
+  flex: 1;
+}
+
+/* Date of Birth dropdown styling */
+.dobContainer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.dropdown {
+  padding: 7px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  color: #333;
+  width: 32%;
+  text-align: center;
+  cursor: pointer;
+}
+
+.dropdown:focus {
+  border-color: #555;
+  outline: none;
+}
+
+/* Buttons */
+.signUpButton {
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.signUpButton:hover {
+  background-color: #0056b3;
+}

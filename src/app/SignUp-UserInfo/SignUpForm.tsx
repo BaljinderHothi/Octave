@@ -7,11 +7,13 @@ import styles from "./styles.module.css";
 export function SignUpForm() {
   const router = useRouter();
   const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
     dob: { day: "", month: "", year: "" },
-    address: "",
     zipCode: "",
     phone: "",
   });
@@ -54,15 +56,35 @@ export function SignUpForm() {
   return (
     <div className={styles.formContainer}>
       <form className={styles.form} onSubmit={handleSubmit}>
+        {/* First Name & Last Name */}
+        <div className={styles.nameContainer}>
+          <div>
+            <label className={styles.label}>First Name</label>
+            <input type="text" name="firstName" className={styles.input} required onChange={handleInputChange} />
+          </div>
+          <div>
+            <label className={styles.label}>Last Name</label>
+            <input type="text" name="lastName" className={styles.input} required onChange={handleInputChange} />
+          </div>
+        </div>
+
+        {/* Username */}
+        <label className={styles.label}>Username</label>
+        <input type="text" name="username" className={styles.input} required onChange={handleInputChange} />
+
+        {/* Email */}
         <label className={styles.label}>Email</label>
         <input type="email" name="email" className={styles.input} required onChange={handleInputChange} />
 
+        {/* Password */}
         <label className={styles.label}>Password</label>
         <input type="password" name="password" className={styles.input} required onChange={handleInputChange} />
 
+        {/* Confirm Password */}
         <label className={styles.label}>Confirm Password</label>
         <input type="password" name="confirmPassword" className={styles.input} required onChange={handleInputChange} />
 
+        {/* Date of Birth */}
         <label className={styles.label}>Date of Birth</label>
         <div className={styles.dobContainer}>
           <select name="day" className={styles.dropdown} onChange={handleDOBChange}>
@@ -85,15 +107,15 @@ export function SignUpForm() {
           </select>
         </div>
 
-        <label className={styles.label}>Address (Optional)</label>
-        <input type="text" name="address" className={styles.input} onChange={handleInputChange} />
-
+        {/* Zip Code */}
         <label className={styles.label}>Zip Code</label>
         <input type="text" name="zipCode" className={styles.input} required onChange={handleInputChange} />
 
+        {/* Phone Number */}
         <label className={styles.label}>Phone Number (Optional)</label>
         <input type="tel" name="phone" className={styles.input} onChange={handleInputChange} />
 
+        {/* Continue Button */}
         <button type="submit" className={styles.signUpButton}>Continue</button>
       </form>
     </div>
