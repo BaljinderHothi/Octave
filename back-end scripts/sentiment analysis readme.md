@@ -14,6 +14,8 @@ Right now, using predefined food, activity, and place keywords, but that’s not
 
 Could include topic modeling to categorize reviews by themes, or allow users to manually tag reviews to refine the word bank. Another idea is tracking word frequency trends—if certain words start appearing more in positive or negative reviews, they could be automatically added.  
 
+    - Attempting to use a combination of  TF-IDF (Term Frequency-Inverse Document Frequency), NER (Named Entity Recognition) and topic modelling with LDA (Latent Dirichlet Allocation) for improved keyword extraction
+  
 ## Edge Cases Considered  
 
 - Yelp API rate limits – added delays and retries to avoid exceeding request limits  
