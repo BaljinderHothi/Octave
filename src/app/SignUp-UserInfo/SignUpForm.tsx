@@ -40,8 +40,13 @@ export function SignUpForm() {
       alert("Zip Code is required.");
       return;
     }
+    if (!formData.dob.day || !formData.dob.month || !formData.dob.year) {
+      alert("Please select your date of birth.");
+      return;
+    }
 
     console.log("User Info:", formData);
+    localStorage.setItem("userData", JSON.stringify(formData));
 
     router.push("/SignUp-UserPreference");
   }

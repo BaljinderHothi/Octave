@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI || "";
-
+const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
-  throw new Error("Please define MONGODB_URI in .env.local");
+  throw new Error("Please define MONGO_URI in your .env file");
 }
+
 
 let cached = (global as any).mongoose || { conn: null, promise: null };
 
@@ -14,8 +14,8 @@ export async function connectToDatabase() {
   }
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
-      dbName: "Octave-DB",
+    cached.promise = mongoose.connect(MONGODB_URI!, {
+      dbName: "OCTAVE-DB",
     }).then((mongoose) => mongoose);
   }
 

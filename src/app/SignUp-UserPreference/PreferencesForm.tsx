@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./styles.module.css";
 
@@ -9,6 +9,15 @@ type PreferencesState = {
   activities: string[];
   places: string[];
   custom: string[];
+};
+
+type UserData = {
+  email: string;
+  password: string;
+  dob: { day: string; month: string; year: string };
+  address?: string;
+  zipCode: string;
+  phone?: string;
 };
 
 export function PreferencesForm() {
@@ -20,6 +29,17 @@ export function PreferencesForm() {
     custom: [],
   });
 
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedUserData = localStorage.getItem("userData");
+      if (storedUserData) {
+        setUserData(JSON.parse(storedUserData));
+      }
+    }
+  }, []);
+  
   function handleCheckboxChange(category: keyof PreferencesState, option: string) {
     setPreferences((prev) => {
       const updatedCategory = prev[category].includes(option)
@@ -44,13 +64,43 @@ export function PreferencesForm() {
     }
   }
 
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
-    console.log("User Preferences:", preferences);
+    if (!userData) {
+      alert("User data is missing. Please restart the signup process.");
+      router.push("/SignUp-UserInfo");
+      return;
+    }
 
-    router.push("/HomePage");
+    const completeUserData = {
+      ...userData,
+      preferences,
+    };
+
+    try {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(completeUserData),
+      });
+
+      const result = await response.json();
+      console.log("API Response:", result);
+
+      if (response.ok && result.success) {
+        alert("Registration complete!");
+        localStorage.removeItem("userData");
+        router.push("/HomePage");
+      } else {
+        console.error("Error response from API:", result);
+        alert(`Error: ${result.message || "Registration failed. Please try again."}`);
+      }
+  } catch (error) {
+    console.error("Fetch error:", error);
+    alert("An error occurred while registering. Please try again.");
   }
+}
 
   function handleBack() {
     router.push("/SignUp-UserInfo");
