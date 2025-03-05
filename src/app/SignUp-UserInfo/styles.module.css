@@ -7,6 +7,7 @@
   background-color: #bbaccf; /*f8f9fa*/
 }
 
+<<<<<<< Updated upstream
 .form {
   width: 400px;
   padding: 20px;
@@ -84,3 +85,74 @@
 .signUpButton:hover {
   background-color: #0056b3;
 }
+=======
+  
+  .dropdown:focus {
+    border-color: #868282; 
+    outline: none;
+  }
+  
+  
+  .signUpButton {
+    background: black;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+  .signUpButton:hover {
+    background: #333;
+  }
+  .container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: var(--bg-color); 
+  }
+  
+  .header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem;
+   
+  }
+  
+  .content {
+    flex: 1;
+    display: flex;
+  }
+  
+  .imageSection {
+    flex: 1; 
+    overflow: hidden;
+  }
+  
+  .formSection {
+    flex: 1; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: var(--text-color);
+  }
+  
+  .formContainer {
+    background: var(--form-bg);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+  }
+  
+
+  
+>>>>>>> Stashed changes
