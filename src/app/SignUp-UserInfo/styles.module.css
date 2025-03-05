@@ -75,3 +75,28 @@
     background: #333;
   }
   
+  .signUpContainer {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100vh; 
+  }
+  
+  .leftSide {
+    flex: 1;            
+    position: relative; 
+  }
+  
+  .rightSide {
+    flex: 1;           
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    box-sizing: border-box;
+  }
+  
+  .title {
+    margin-bottom: 1rem;
+  }
