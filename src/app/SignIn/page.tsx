@@ -4,8 +4,10 @@ import { SignInForm } from "./SignInForm";
 export default function SignInPage() {
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Welcome back!</h1>
+      <h1 className={styles.brandTitle}>OCTAVE</h1>
+      <h2 className={styles.title}>Welcome back!</h2>
       <SignInForm />
     </div>
   );
 }
+

@@ -11,7 +11,7 @@
     font-size: 2rem;
     font-weight: bold;
     margin-bottom: 20px;
-    color: #222; /* ✅ Darker title */
+    color: #222; 
   }
   
   .formContainer {
@@ -25,7 +25,7 @@
   .form label {
     font-size: 0.9rem;
     margin-bottom: 5px;
-    color: #333; /* ✅ Darker label text */
+    color: #333; 
   }
   
   .input {
@@ -34,7 +34,7 @@
     border-radius: 5px;
     margin-bottom: 15px;
     width: 100%;
-    color: #222; /* ✅ Darker text inside input fields */
+    color: #222; 
   }
   
   .signInButton {
@@ -54,7 +54,7 @@
   
   .authButtons {
     display: flex;
-    justify-content: center; /* ✅ Centered the "Register" button */
+    justify-content: center;
     margin-top: 20px;
   }
   
@@ -75,11 +75,20 @@
   .register {
     background: black;
     color: white;
-    width: 100%; /* ✅ Make "Register" full width */
+    width: 100%; 
     text-align: center;
   }
   
   .register:hover {
     background: #333;
+  }
+
+  .brandTitle {
+    font-size: 6rem;  
+    font-weight: bold;
+    text-transform: uppercase;  
+    letter-spacing: 2px;  
+    margin-bottom: 10px;
+    color: #000000;  
   }
   

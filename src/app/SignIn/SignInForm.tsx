@@ -1,4 +1,4 @@
-"use client"; // Enables client-side interactions in Next.js
+"use client"; 
 
 import { useState } from "react";
 import styles from "./styles.module.css";
@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { AuthButtons } from "./AuthButtons";
 
 export function SignInForm() {
-  const router = useRouter(); // For navigation
+  const router = useRouter(); 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -16,9 +16,7 @@ export function SignInForm() {
     console.log("Email:", email);
     console.log("Password:", password);
     
-    // TODO: Implement authentication logic (API call)
-
-    router.push("/dashboard"); // Redirect after login (placeholder)
+    router.push("/HomePage");
   }
 
   return (
