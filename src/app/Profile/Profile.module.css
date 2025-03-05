@@ -47,6 +47,7 @@
   .mainContent {
     flex-grow: 1;
     padding: 40px;
+    color: #000;
   }
   
   .backButton {

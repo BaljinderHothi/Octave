@@ -34,11 +34,13 @@
     border-radius: 50%;
     object-fit: cover;
     margin-bottom: 10px;
+    color: #000;
   }
   
   .fileInput {
     display: block;
     margin: 10px auto;
+    color: #000;
   }
   
   .bioContainer {
