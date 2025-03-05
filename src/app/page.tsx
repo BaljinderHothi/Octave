@@ -1,4 +1,10 @@
-import Image from "next/image";
+import { redirect } from "next/navigation";
+
+export default function Home() {
+  redirect("/SignIn"); // Redirects users to the Sign-In page
+}
+
+/*import Image from "next/image";
 
 export default function Home() {
   return (
@@ -99,3 +105,4 @@ export default function Home() {
     </div>
   );
 }
+*/
