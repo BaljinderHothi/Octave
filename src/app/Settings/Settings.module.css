@@ -1,0 +1,76 @@
+.settingsContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    background: #f8f6fc;
+    height: 100vh;
+  }
+  
+  .backButton {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #000;
+    margin-bottom: 20px;
+  }
+  
+  .title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #000;
+  }
+  
+  .profilePicContainer {
+    text-align: center;
+    margin: 20px 0;
+  }
+  
+  .profileImage {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+    color: #000;
+  }
+  
+  .fileInput {
+    display: block;
+    margin: 10px auto;
+    color: #000;
+  }
+  
+  .bioContainer {
+    width: 100%;
+    max-width: 500px;
+  }
+  
+  .bioInput {
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 16px;
+    background: #fff;
+    color: #000;
+  }
+  
+  .saveButton {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background: black;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  
+  .saveButton:hover {
+    background: #333;
+  }
+  
