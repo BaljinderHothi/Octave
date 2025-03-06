@@ -3,7 +3,7 @@
   flex-direction: column;
   height: 100vh;
   width: 100vw;
-  background-color: #d2cbdb;
+  background-color: #bbaccf;
   overflow: hidden;
   position: fixed; /* Keep fixed to prevent any scrolling */
 }
@@ -133,7 +133,7 @@
 }
 
 .signUpButton {
-  background-color: #a882dd;
+  background-color: #007bff;
   color: white;
   padding: 8px;
   border: none;
@@ -144,17 +144,7 @@
 }
 
 .signUpButton:hover {
-  background-color: #8a62c4;
-}
-
-/* Fix for html and body to prevent any default margins causing scroll */
-:global(html),
-:global(body) {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  height: 100vh;
-  width: 100vw;
+  background-color: #0056b3;
 }
 
 /* Add global box-sizing to prevent size issues */
