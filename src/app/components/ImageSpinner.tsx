@@ -1,52 +1,32 @@
 "use client";
-
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import styles from "../SignUp-Userinfo/styles.module.css";
 
 export default function ImageSpinner() {
-  const [images, setImages] = useState<string[]>([]);
+  const images = [
+    "/ui-images/food/188_chuchifritos_43.7.jpg",
+    "/ui-images/food/220827_GuangXu_BA-UncleLou_234.jpg",
+    "/ui-images/food/celeriac-gotham_1021_nf_1.jpeg",
+    "/ui-images/food/diner-24-burger-7.jpg",
+    "/ui-images/food/Tatiana_Everything_DavidALee_NYC_2_jh1d2r.jpg"
+  ];
+  
   const [currentIndex, setCurrentIndex] = useState(0);
-
+  
   useEffect(() => {
-    async function fetchImages() {
-      try {
-        const res = await fetch("/api/images"); 
-        const data = await res.json();
-        setImages(data);
-      } catch (error) {
-        console.error("Error fetching images:", error);
-      }
-    }
-    fetchImages();
-  }, []);
-
-  useEffect(() => {
-    if (images.length === 0) return;
-
     const interval = setInterval(() => {
-      const randomIndex = Math.floor(Math.random() * images.length);
-      setCurrentIndex(randomIndex);
+      setCurrentIndex((prev) => (prev + 1) % images.length);
     }, 3000);
-
+    
     return () => clearInterval(interval);
-  }, [images]);
-
-  if (images.length === 0) {
-    return <div>Loading images...</div>;
-  }
-
-  const currentImage = `/ui-images/food/${images[currentIndex]}`;
-
+  }, [images.length]);
+  
   return (
-    <div style={{ width: "100%", height: "100%", overflow: "hidden" }}>
+    <div className={styles.imageWrapper}>
       <img
-        src={currentImage}
-        alt="Random Food"
-        style={{
-          width: "100%",
-          height: "auto",
-          objectFit: "cover",
-          display: "block",
-        }}
+        src={images[currentIndex]}
+        alt="Food or Restaurant"
+        className={styles.spinnerImage}
       />
     </div>
   );
