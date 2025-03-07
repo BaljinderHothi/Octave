@@ -13,7 +13,7 @@
   font-size: 2.2rem;
   font-weight: bold;
   margin-bottom: 5px;
-  margin-top: -60px;
+  margin-top: -20px;
   color: #222;
   text-align: center;
 }
@@ -29,8 +29,8 @@
 .form {
   display: grid;
   grid-template-columns: repeat(4, 1fr); 
-  gap: 25px;
-  max-width: 1400px;
+  gap: 10px;
+  max-width: 1700px;
   width: 100%;
 }
 
@@ -107,13 +107,19 @@
 }
 
 .tag {
-  background: #007bff;
-  color: white;
-  padding: 7px 12px;
-  margin: 5px;
-  border-radius: 15px;
-  font-size: 1rem;
+  background: #007bff; 
+  color: white; 
+  padding: 4px 10px;
+  margin: 2.5px;
+  border-radius: 12px;
+  font-size: 0.8rem;
   display: inline-block;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.tag:hover {
+  background: #0056b3; 
 }
 
 
