@@ -4,6 +4,9 @@ import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema(
   {
+    firstName: { type: String },
+    lastName: { type: String },
+    username: { type: String },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     dob: {
@@ -11,12 +14,17 @@ const UserSchema = new mongoose.Schema(
       month: { type: Number, required: true },
       year: { type: Number, required: true },
     },
-    address: { type: String },
     zipCode: { type: String, required: true },
-    phone: { type: String },
+    preferences: {
+      food: { type: [String], default: [] },
+      activities: { type: [String], default: [] },
+      places: { type: [String], default: [] },
+      custom: { type: [String], default: [] },
+    },
     createdAt: { type: Date, default: Date.now },
   },
   { collection: "users" }
 );
+
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);
