@@ -15,7 +15,7 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [bio, setBio] = useState("I love Italian and Chinese cuisine. In my free time, I enjoy rock climbing, walking trails, and going to concerts.");
-  const [profilePic, setProfilePic] = useState("/profile-pic.jpg");
+  const [profilePic, setProfilePic] = useState("/cat.jpeg");
 
   return (
     <ProfileContext.Provider value={{ bio, profilePic, setBio, setProfilePic }}>
