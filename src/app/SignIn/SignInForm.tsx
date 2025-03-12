@@ -10,13 +10,29 @@ export function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
-    console.log("Email:", email);
-    console.log("Password:", password);
-    
-    router.push("/HomePage");
+    try {
+      const response = await fetch("/api/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const result = await response.json();
+      console.log("API Response:", result);
+
+      if (response.ok && result.success) {
+        alert("Sign in successful!");
+        router.push("/HomePage");
+      } else {
+        alert(`Error: ${result.message || "Sign in failed."}`);
+      }
+    } catch (error) {
+      console.error("Error during sign in:", error);
+      alert("An error occurred. Please try again.");
+    }
   }
 
   return (

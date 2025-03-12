@@ -6,7 +6,7 @@ import { connectToDatabase } from "../../lib/mongodb";
 export async function POST(req: Request) {
   try {
     await connectToDatabase();
-    const { email, password, dob, zipCode, preferences } = await req.json();
+    const { firstName, lastName, username, email, password, dob, zipCode, preferences } = await req.json();
     console.log("Received registration payload:", { email, password, dob, zipCode, preferences });
 
 
@@ -26,6 +26,9 @@ export async function POST(req: Request) {
 
 
     const newUser = await User.create({
+      firstName,
+      lastName,
+      username,
       email,
       password: hashedPassword,
       dob: convertedDOB,
