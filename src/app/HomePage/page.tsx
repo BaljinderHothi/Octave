@@ -20,7 +20,9 @@ export default function Dashboard() {
 
   return (
     <div className={styles.container}>
-    
+      <button onClick={handleLogout} className={styles.logoutButton}>Log Out</button>
+
+      <h1 className={styles.octaveTitle}>OCTAVE</h1>
       <h1 className={styles.title}>Welcome to the Homepage!</h1>
 
       <div className={styles.searchContainer}>
@@ -48,8 +50,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <button onClick={handleLogout} className={styles.logoutButton}>Log Out</button>
-
       <button onClick={handleGenerateItinerary} className={styles.generateButton}>
         Generate Itinerary
       </button>
@@ -57,7 +57,6 @@ export default function Dashboard() {
       <button onClick={handleGoToProfile} className={styles.profileButton}>
         Go to Profile
       </button>
-      
     </div>
   );
 }
