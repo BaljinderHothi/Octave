@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import styles from "../SignUp-UserInfo/styles.module.css";
+import Image from "next/image";
 
 export default function ImageSpinner() {
   const images = [
@@ -22,12 +23,12 @@ export default function ImageSpinner() {
   }, [images.length]);
   
   return (
-    <div className={styles.imageWrapper}>
-      <img
-        src={images[currentIndex]}
-        alt="Food or Restaurant"
-        className={styles.spinnerImage}
-      />
-    </div>
+    <Image 
+    src={images[currentIndex]} 
+    alt="Spinning Image"
+    width={300}  
+    height={200}
+    className={styles.spinnerImage} 
+  />
   );
 }

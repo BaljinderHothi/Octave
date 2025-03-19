@@ -119,7 +119,7 @@ export function PreferencesForm() {
       {/* Food Preferences */}
       <fieldset className={styles.category}>
         <legend>Food Preferences:</legend>
-        <p>Favorite cuisines and dishes? You can add more in "Other"!</p>
+        <p>Favorite cuisines and dishes? You can add more in &quot;Other&quot;!</p>
         {["Italian", "Mexican", "Sushi", "BBQ", "Vegan", "Fast Food", "Pizza", "Indian", "Latin Fusion"].map((food) => (
           <label key={food}>
             <input
@@ -158,7 +158,7 @@ export function PreferencesForm() {
       {/* Activities Preferences */}
       <fieldset className={styles.category}>
         <legend>Activities:</legend>
-        <p>What activities do you enjoy? You can add more in "Other"!</p>
+        <p>What activities do you enjoy? You can add more in &quot;Other&quot;!</p>
         {["Bowling", "Billiards", "Rock Climbing", "Night Life", "Movies", "Running", "Swimming", "Yoga", "Dancing"].map((activity) => (
           <label key={activity}>
             <input
@@ -197,7 +197,7 @@ export function PreferencesForm() {
       {/* Places to Visit */}
       <fieldset className={styles.category}>
         <legend>Places to Visit:</legend>
-        <p>Favorite places to visit? You can add more in "Other"!</p>
+        <p>Favorite places to visit? You can add more in &quot;Other&quot;!</p>
         {["Museums", "Parks", "Zoos", "Landmarks", "Tourist Attractions", "Beaches", "Theaters", "Malls", "Libraries"].map((place) => (
           <label key={place}>
             <input
@@ -237,7 +237,7 @@ export function PreferencesForm() {
       <fieldset className={styles.category}>
         <legend>Tell Us More!:</legend>
         <p>
-          Did we miss anything? Feel free to write anything you'd like us to know about you. This will help train our model for better recommendations.
+          Did we miss anything? Feel free to write anything you&apos;d like us to know about you. This will help train our model for better recommendations.
         </p>
         <textarea className={styles.textarea} placeholder="Share more about yourself..."></textarea>
       </fieldset>
