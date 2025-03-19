@@ -18,14 +18,16 @@ export default function Dashboard() {
     router.push("/Profile");
   }
 
-  //For now, hardcoding the detailed view
+  //using placeId parameter to navigate to  correct page, will change later on
   function handleViewDetails(placeId: string) {
-    router.push(`/place/1`);
+    router.push(`/place/${placeId}`);
   }
 
   return (
     <div className={styles.container}>
-      <button onClick={handleLogout} className={styles.logoutButton}>Log Out</button>
+      <button onClick={handleLogout} className={styles.logoutButton}>
+        Log Out
+      </button>
 
       <h1 className={styles.octaveTitle}>OCTAVE</h1>
       <h1 className={styles.title}>Welcome to the Homepage!</h1>
