@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import styles from "./Profile.module.css";
 import { useProfile } from "../Profile/ProfileContext";
 
@@ -32,11 +33,18 @@ export default function Profile() {
         <button onClick={handleBackToHome} className={styles.backButton}>← Home</button>
 
         <div className={styles.profileHeader}>
-          <img src={profilePic} alt="Profile" className={styles.profileImage} />
+          <Image 
+            src={profilePic} 
+            alt="Profile" 
+            className={styles.profileImage}
+            width={100}
+            height={100}
+            priority
+          />
           <div className={styles.profileInfo}>
             <h2>@jojolie</h2>
             <p className={styles.interests}>
-              <i>“{bio}”</i>
+              <i>&quot;{bio}&quot;</i>
             </p>
           </div>
         </div>
@@ -48,10 +56,10 @@ export default function Profile() {
         <div className={styles.badges}>
           <h3>Badges:</h3>
           <div className={styles.badgeList}>
-            <img src="/badges/badge1.png" alt="Badge 1" className={styles.badge} />
-            <img src="/badges/badge2.png" alt="Badge 2" className={styles.badge} />
-            <img src="/badges/badge3.png" alt="Badge 3" className={styles.badge} />
-            <img src="/badges/badge4.png" alt="Badge 4" className={styles.badge} />
+            <Image src="/badges/badge1.png" alt="Badge 1" className={styles.badge} width={50} height={50} />
+            <Image src="/badges/badge2.png" alt="Badge 2" className={styles.badge} width={50} height={50} />
+            <Image src="/badges/badge3.png" alt="Badge 3" className={styles.badge} width={50} height={50} />
+            <Image src="/badges/badge4.png" alt="Badge 4" className={styles.badge} width={50} height={50} />
           </div>
         </div>
 
@@ -59,7 +67,7 @@ export default function Profile() {
           <h3>Lists →</h3>
 
           <div className={styles.list}>
-            <img src="/list-icons/favorites.png" alt="Favorites" className={styles.listIcon} />
+            <Image src="/list-icons/favorites.png" alt="Favorites" className={styles.listIcon} width={40} height={40} />
             <div>
               <h4>Favorites</h4>
               <p>Favorites list</p>
@@ -67,9 +75,9 @@ export default function Profile() {
           </div>
 
           <div className={styles.list}>
-            <img src="/list-icons/italian.png" alt="Italian Restaurants" className={styles.listIcon} />
+            <Image src="/list-icons/italian.png" alt="Italian Restaurants" className={styles.listIcon} width={40} height={40} />
             <div>
-              <h4>Jolie’s Top 10 Italian Restaurants 🇮🇹</h4>
+              <h4>Jolie&apos;s Top 10 Italian Restaurants 🇮🇹</h4>
               <p>Definitely will try these foods as well when I actually go to Italy :)</p>
             </div>
           </div>
