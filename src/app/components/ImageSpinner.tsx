@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import styles from "../SignUp-Userinfo/styles.module.css";
+import styles from "../SignUp-UserInfo/styles.module.css";
 
 export default function ImageSpinner() {
   const images = [

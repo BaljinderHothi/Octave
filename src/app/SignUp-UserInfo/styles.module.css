@@ -147,6 +147,3 @@
   background-color: #0056b3;
 }
 
-:global(*) {
-  box-sizing: border-box;
-}
