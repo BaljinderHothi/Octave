@@ -1,32 +1,29 @@
 {
   "name": "octave",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
+  "repository": "https://github.com/BaljinderHothi/Octave",
+  "license": "MIT",
+  "private": true,  "scripts": {
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "next dev",
+    "lint": "next lint",
+    "start": "next start"
   },
   "dependencies": {
-    "bcryptjs": "^3.0.2",
-    "jsonwebtoken": "^9.0.2",
-    "lucide-react": "^0.477.0",
-    "mongoose": "^8.12.1",
-    "next": "^15.1.7",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "@vercel/edge-config": "0.1.0-canary.15",
+    "lucide-react": "^0.483.0",
+    "next": "canary",
+    "react": "latest",
+    "react-dom": "latest"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@types/jsonwebtoken": "^9.0.9",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.1.7",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "@types/node": "^18.15.5",
+    "@types/react": "latest",
+    "autoprefixer": "^10.4.14",
+    "eslint": "^8.36.0",
+    "eslint-config-next": "canary",
+    "postcss": "^8.4.21",
+    "tailwindcss": "^3.2.7",
+    "turbo": "^1.8.5",
+    "typescript": "^4.9.5"
   }
 }
