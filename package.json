@@ -1,9 +1,8 @@
 {
-  "name": "feature-flag-apple-store",
-  "repository": "https://github.com/vercel/examples.git",
+  "name": "octave",
+  "repository": "https://github.com/BaljinderHothi/Octave",
   "license": "MIT",
-  "private": true,
-  "scripts": {
+  "private": true,  "scripts": {
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
