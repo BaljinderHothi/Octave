@@ -14,7 +14,10 @@
     "isolatedModules": true,
     "incremental": true,
     "jsx": "preserve",
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]          // allows @/lib/mongodb, @/components, etc.
+    }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
