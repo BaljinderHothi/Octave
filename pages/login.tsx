@@ -3,6 +3,7 @@
 // this file can be deleted or erased easily 
 
 import { Soup } from 'lucide-react'
+import Link from 'next/link'
 
 export default function Login() {
   return (
@@ -54,9 +55,9 @@ export default function Login() {
         <div className="mt-6">
           <p className="text-center text-sm text-gray-600">
             Don't have an account?{' '}
-            <a href="#" className="font-medium" style={{ color: "#003049" }}>
+            <Link href="/signup" className="font-medium" style={{ color: "#003049" }}>
               Sign up
-            </a>
+            </Link>
           </p>
         </div>
       </div>
