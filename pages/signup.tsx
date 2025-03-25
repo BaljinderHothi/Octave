@@ -1,4 +1,8 @@
+// This is the sign up page where users can register their basic info (name, email, password, DOB, and Phone Number).
+// Once a user finishes and clicks "continue", they will be routed to user preference page to complete their profile build.
+
 import { useState, ChangeEvent, FormEvent } from 'react'
+import useRouter from 'next/router'
 
 export default function Signup() {
   const [form, setForm] = useState({
@@ -14,12 +18,9 @@ export default function Signup() {
     phone: '',
   })
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
-  }
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault()
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))}
+  const handleSubmit = (e: FormEvent) => {e.preventDefault() 
+    useRouter.push('/userpreference')
   }
 
   const days = Array.from({ length: 31 }, (_, i) => i + 1)
