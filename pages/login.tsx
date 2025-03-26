@@ -63,7 +63,7 @@ export default function Login() {
       </div>
       
       <p className="mt-8 text-center text-sm text-gray-500">
-        Continue your NYC adventure!
+      Continue your NYC adventure!
       </p>
     </div>
   )
