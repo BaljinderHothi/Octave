@@ -3,6 +3,7 @@
 
 import { useState, ChangeEvent, FormEvent } from 'react'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 
 export default function Signup() {
   const router = useRouter()
@@ -170,10 +171,19 @@ export default function Signup() {
             className={`w-full py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white ${
               loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
             }`}
+            style={{ backgroundColor: "#003049" }}
           >
             {loading ? 'Creating Account...' : 'Continue'}
           </button>
         </form>
+        <div className="mt-6">
+            <p className="text-center text-sm text-gray-600">
+              Already have an account?{' '}
+              <Link href="/login" className="font-medium" style={{ color: "#003049" }}>
+                Login
+              </Link>
+            </p>
+          </div>
       </section>
     </div>
   )

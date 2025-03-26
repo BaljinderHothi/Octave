@@ -10,6 +10,7 @@ export default function UserPreference() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isNewUser, setIsNewUser] = useState(false)
   const [form, setForm] = useState({
     food: [] as string[],
     activity: [] as string[],
@@ -23,15 +24,50 @@ export default function UserPreference() {
     tellUsMore: ''
   })
 
-  // Check for token on component mount
+  // Check for token and load existing preferences
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      router.push('/signup')
-    } else {
-      setIsAuthenticated(true)
-      setLoading(false)
+    const loadPreferences = async () => {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        router.push('/login')
+        return
+      }
+
+      try {
+        // Fetch existing preferences
+        const response = await fetch('/api/user/preferences', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          // Update form with existing preferences
+          setForm(prev => ({
+            ...prev,
+            food: data.data.food || [],
+            activity: data.data.activities || [],
+            places: data.data.places || [],
+            otherFoodList: data.data.food?.filter((item: string) => !["Italian", "Mexican", "Sushi", "BBQ", "Vegan", "Fast Food", "Pizza", "Indian", "Latin Fusion"].includes(item)) || [],
+            otherActivityList: data.data.activities?.filter((item: string) => !["Bowling", "Billiards", "Rock Climbing", "Night Life", "Movies", "Running", "Swimming", "Yoga", "Dancing"].includes(item)) || [],
+            otherPlacesList: data.data.places?.filter((item: string) => !["Museums", "Parks", "Zoos", "Landmarks", "Tourist Attractions", "Beaches", "Theaters", "Malls", "Libraries"].includes(item)) || [],
+            tellUsMore: data.data.custom?.[0] || ''
+          }))
+          setIsNewUser(false)
+        } else {
+          setIsNewUser(true)
+        }
+      } catch (err) {
+        console.error('Error loading preferences:', err)
+        setIsNewUser(true)
+      } finally {
+        setIsAuthenticated(true)
+        setLoading(false)
+      }
     }
+
+    loadPreferences()
   }, [router])
 
   // Show loading state while checking authentication
@@ -102,7 +138,7 @@ export default function UserPreference() {
   }
 
   const handleBack = () => {
-    router.push('/signup')
+    router.push('/')
   }
 
   const toggleCheckbox = (category: 'food' | 'activity' | 'places', value: string) => {
@@ -164,8 +200,14 @@ export default function UserPreference() {
 
   return (
     <section className={sectionClass}>
-      <h1 className="text-3xl font-bold mb-1">Tell us what you like!</h1>
-      <p className="text-gray-500 mb-8 text-sm text-center px-4">Select your preferences so we can personalize recommendations.</p>
+      <h1 className="text-3xl font-bold mb-1">
+        {isNewUser ? 'Tell us what you like!' : 'Update Your Preferences'}
+      </h1>
+      <p className="text-gray-500 mb-8 text-sm text-center px-4">
+        {isNewUser 
+          ? 'Select your preferences so we can personalize recommendations.'
+          : 'Update your preferences to help us provide better recommendations.'}
+      </p>
 
       {error && (
         <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -249,7 +291,7 @@ export default function UserPreference() {
           disabled={loading}
           className="bg-black text-white px-6 py-2 rounded-md disabled:opacity-50"
         >
-          {loading ? 'Saving...' : 'Continue'}
+          {loading ? 'Saving...' : isNewUser ? 'Continue' : 'Save Changes'}
         </button>
       </div>
     </section>
