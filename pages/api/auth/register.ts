@@ -2,6 +2,9 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from '../../../lib/mongoose';
 import User from '../../../models/User';
 import * as bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || '';
 
 export default async function handler(
   req: NextApiRequest,
@@ -14,7 +17,7 @@ export default async function handler(
   try {
     await dbConnect();
 
-    const { firstName, lastName, username, email, password, zipCode } = req.body;
+    const { firstName, lastName, username, email, password, zipCode, preferences } = req.body;
 
     if (!email || !password || !zipCode) {
       return res.status(400).json({
@@ -26,7 +29,7 @@ export default async function handler(
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
         message: 'User with this email already exists'
       });
@@ -36,7 +39,7 @@ export default async function handler(
     if (username) {
       const existingUsername = await User.findOne({ username });
       if (existingUsername) {
-        return res.status(400).json({
+        return res.status(409).json({
           success: false,
           message: 'This username is already taken'
         });
@@ -47,7 +50,7 @@ export default async function handler(
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user with default empty preferences
+    // Create user with provided preferences or defaults
     const user = await User.create({
       firstName,
       lastName,
@@ -55,7 +58,7 @@ export default async function handler(
       email,
       password: hashedPassword,
       zipCode,
-      preferences: {
+      preferences: preferences || {
         food: [],
         activities: [],
         places: [],
@@ -63,14 +66,22 @@ export default async function handler(
       }
     });
 
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
     // Remove password from response
-    const newUser = user.toObject();
-    delete newUser.password;
+    const userResponse = user.toObject();
+    delete userResponse.password;
 
     res.status(201).json({
       success: true,
       message: 'User successfully registered',
-      data: newUser
+      user: userResponse,
+      token
     });
   } catch (error) {
     console.error('Registration error:', error);
