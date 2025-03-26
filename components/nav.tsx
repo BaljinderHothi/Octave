@@ -13,7 +13,7 @@ export default function Nav() {
     const token = localStorage.getItem('token')
     setIsLoggedIn(!!token)
     setIsLoading(false)
-  }, [])
+  }, [router.pathname]) 
 
   const handleLogout = async () => {
     try {
@@ -42,7 +42,6 @@ export default function Nav() {
       router.push('/login')
     } catch (error) {
       console.error('Logout error:', error)
-      // Still clear token and redirect even if API call fails
       localStorage.removeItem('token')
       setIsLoggedIn(false)
       router.push('/login')
@@ -85,7 +84,7 @@ export default function Nav() {
               </Link>
             </li>
             <li>
-              <button 
+              <button
                 onClick={handleLogout}
                 className="hover:text-gray-300 flex items-center gap-1"
               >
