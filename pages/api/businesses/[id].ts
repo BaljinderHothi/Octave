@@ -1,8 +1,8 @@
 //API endpoint for fetching a business by id
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import dbConnect from '../../../lib/mongoose';
-import Business from '../../../models/Business';
+import dbConnect from '@/lib/mongoose';
+import Business from '@/models/Business';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
