@@ -1,10 +1,12 @@
+//API enpoint that handles user auth
+//validates email/pass, generating JWT token, returns user data
+
 import { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from '../../../lib/mongoose';
 import User from '../../../models/User';
 import * as bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-// Ensure JWT_SECRET exists
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is not set');
 }
@@ -24,7 +26,6 @@ export default async function handler(
 
     const { email, password } = req.body;
 
-    // Basic validation
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -32,7 +33,6 @@ export default async function handler(
       });
     }
 
-    // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
@@ -50,7 +50,6 @@ export default async function handler(
       });
     }
 
-    // Verify password
     const isMatch = await bcrypt.compare(password, user.password);
     
     if (!isMatch) {
@@ -60,24 +59,20 @@ export default async function handler(
       });
     }
 
-    // Create JWT payload
     const payload = {
       userId: user._id,
       email: user.email
     };
 
-    // Sign JWT token
     const token = jwt.sign(
       payload,
       JWT_SECRET,
       { expiresIn: '7d' } 
     );
 
-    // Remove password from response
     const userObject = user.toObject();
     delete userObject.password;
 
-    // Set secure cookie with token
     res.setHeader('Set-Cookie', `token=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`);
 
     res.status(200).json({

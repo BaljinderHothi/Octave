@@ -5,6 +5,10 @@
 import { useState, ChangeEvent, KeyboardEvent, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
+const DEFAULT_FOOD_OPTIONS = ["Italian", "Mexican", "Sushi", "BBQ", "Vegan", "Fast Food", "Pizza", "Indian", "Latin Fusion"];
+const DEFAULT_ACTIVITY_OPTIONS = ["Bowling", "Billiards", "Rock Climbing", "Night Life", "Movies", "Running", "Swimming", "Yoga", "Dancing"];
+const DEFAULT_PLACES_OPTIONS = ["Museums", "Parks", "Zoos", "Landmarks", "Tourist Attractions", "Beaches", "Theaters", "Malls", "Libraries"];
+
 export default function UserPreference() {
   const router = useRouter()
   const [error, setError] = useState('')
@@ -24,7 +28,7 @@ export default function UserPreference() {
     tellUsMore: ''
   })
 
-  // Check for token and load existing preferences
+  //Check for token and load existing preferences
   useEffect(() => {
     const loadPreferences = async () => {
       const token = localStorage.getItem('token')
@@ -34,7 +38,7 @@ export default function UserPreference() {
       }
 
       try {
-        // Fetch existing preferences
+        //Fetch existing preferences
         const response = await fetch('/api/user/preferences', {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -43,15 +47,21 @@ export default function UserPreference() {
 
         if (response.ok) {
           const data = await response.json()
-          // Update form with existing preferences
+          
+          //Split preferences into default options and custom options
+          const foodPrefs = data.data.food || [];
+          const activityPrefs = data.data.activities || [];
+          const placesPrefs = data.data.places || [];
+
+          //Update form with existing preferences
           setForm(prev => ({
             ...prev,
-            food: data.data.food || [],
-            activity: data.data.activities || [],
-            places: data.data.places || [],
-            otherFoodList: data.data.food?.filter((item: string) => !["Italian", "Mexican", "Sushi", "BBQ", "Vegan", "Fast Food", "Pizza", "Indian", "Latin Fusion"].includes(item)) || [],
-            otherActivityList: data.data.activities?.filter((item: string) => !["Bowling", "Billiards", "Rock Climbing", "Night Life", "Movies", "Running", "Swimming", "Yoga", "Dancing"].includes(item)) || [],
-            otherPlacesList: data.data.places?.filter((item: string) => !["Museums", "Parks", "Zoos", "Landmarks", "Tourist Attractions", "Beaches", "Theaters", "Malls", "Libraries"].includes(item)) || [],
+            food: foodPrefs.filter((item: string) => DEFAULT_FOOD_OPTIONS.includes(item)),
+            activity: activityPrefs.filter((item: string) => DEFAULT_ACTIVITY_OPTIONS.includes(item)),
+            places: placesPrefs.filter((item: string) => DEFAULT_PLACES_OPTIONS.includes(item)),
+            otherFoodList: foodPrefs.filter((item: string) => !DEFAULT_FOOD_OPTIONS.includes(item)),
+            otherActivityList: activityPrefs.filter((item: string) => !DEFAULT_ACTIVITY_OPTIONS.includes(item)),
+            otherPlacesList: placesPrefs.filter((item: string) => !DEFAULT_PLACES_OPTIONS.includes(item)),
             tellUsMore: data.data.custom?.[0] || ''
           }))
           setIsNewUser(false)
@@ -70,7 +80,7 @@ export default function UserPreference() {
     loadPreferences()
   }, [router])
 
-  // Show loading state while checking authentication
+  //Show loading state while checking authentication
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -79,7 +89,7 @@ export default function UserPreference() {
     )
   }
 
-  // Don't render the form if not authenticated
+  //Don't render the form if not authenticated
   if (!isAuthenticated) {
     return null
   }
@@ -104,7 +114,7 @@ export default function UserPreference() {
         throw new Error('No authentication token found')
       }
 
-      // Send preferences directly in the request body
+      //Send preferences directly in the request body
       const response = await fetch('/api/user/preferences', {
         method: 'PUT',
         headers: {
@@ -125,10 +135,10 @@ export default function UserPreference() {
         throw new Error(data.message || 'Failed to save preferences')
       }
 
-      // Show success message before redirecting
+      //Show success message before redirecting
       alert('Preferences saved successfully!')
       
-      // Redirect to home page after successful save
+      //Redirect to home page after successful save
       router.push('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save preferences')
@@ -219,7 +229,7 @@ export default function UserPreference() {
         <div className={boxClass}>
           <label className={labelClass}>Food Preferences:</label>
           <p className="text-sm text-gray-600">Favorite cuisines and dishes? You can add more in "Other"!</p>
-          {renderCheckboxes(["Italian", "Mexican", "Sushi", "BBQ", "Vegan", "Fast Food", "Pizza", "Indian", "Latin Fusion"], 'food')}
+          {renderCheckboxes(DEFAULT_FOOD_OPTIONS, 'food')}
           <input 
             type="text" 
             name="otherFood" 
@@ -235,7 +245,7 @@ export default function UserPreference() {
         <div className={boxClass}>
           <label className={labelClass}>Activities:</label>
           <p className="text-sm text-gray-600">What activities do you enjoy? You can add more in "Other"!</p>
-          {renderCheckboxes(["Bowling", "Billiards", "Rock Climbing", "Night Life", "Movies", "Running", "Swimming", "Yoga", "Dancing"], 'activity')}
+          {renderCheckboxes(DEFAULT_ACTIVITY_OPTIONS, 'activity')}
           <input 
             type="text" 
             name="otherActivity" 
@@ -251,7 +261,7 @@ export default function UserPreference() {
         <div className={boxClass}>
           <label className={labelClass}>Places to Visit:</label>
           <p className="text-sm text-gray-600">Favorite places to visit? You can add more in "Other"!</p>
-          {renderCheckboxes(["Museums", "Parks", "Zoos", "Landmarks", "Tourist Attractions", "Beaches", "Theaters", "Malls", "Libraries"], 'places')}
+          {renderCheckboxes(DEFAULT_PLACES_OPTIONS, 'places')}
           <input 
             type="text" 
             name="otherPlaces" 
