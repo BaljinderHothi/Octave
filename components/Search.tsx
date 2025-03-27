@@ -14,40 +14,53 @@ import React, { useState } from 'react';
 import { Search as SearchIcon } from 'lucide-react';
 
 interface SearchProps {
-  onSearch: (query: string) => void;
+  onSearch: (query: string, categories?: string) => void;
   isLoading?: boolean;
 }
 
 export const Search: React.FC<SearchProps> = ({ onSearch, isLoading = false }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch(searchQuery);
+    onSearch(searchQuery, categoryFilter);
   };
 
   return (
     <div className="w-full max-w-[900px] mx-auto mb-8">
-      <form onSubmit={handleSubmit} className="relative">
-        <input
-          type="text"
-          placeholder="Search for restaurants by cuisine, name, or neighborhood"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          disabled={isLoading}
-        />
-        <button
-          type="submit"
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-600"
-          disabled={isLoading || searchQuery.trim() === ''}
-        >
-          {isLoading ? (
-            <span className="animate-spin">🔄</span>
-          ) : (
-            <SearchIcon size={24} />
-          )}
-        </button>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search for businesses by name, type, or neighborhood"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isLoading}
+          />
+          <button
+            type="submit"
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-600"
+            disabled={isLoading || searchQuery.trim() === ''}
+          >
+            {isLoading ? (
+              <span className="animate-spin">🔄</span>
+            ) : (
+              <SearchIcon size={24} />
+            )}
+          </button>
+        </div>
+        <div className="flex space-x-2">
+          <input
+            type="text"
+            placeholder="Filter by category (optional)"
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isLoading}
+          />
+        </div>
       </form>
     </div>
   );

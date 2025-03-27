@@ -8,40 +8,43 @@ some things we need to keep in mind as we improve are :
 - implement error handling
 - design responsive layout
 */
-
 import type { FC } from 'react'
-import { Soup } from 'lucide-react'
 import { Search } from '../components/Search'
 import { useState } from 'react'
 
-interface Restaurant {
+interface Business {
   name: string;
   categories: { title: string }[];
   rating: number;
-  image_url: string;
-  yelp_url: string;
+  image_url?: string;
+  yelp_url?: string;
 }
 
 export default function Home() {
-  const [searchResults, setSearchResults] = useState<Restaurant[]>([]);
+  const [searchResults, setSearchResults] = useState<Business[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSearch = async (query: string) => {
+  const handleSearch = async (query: string, categories?: string) => {
     if (query.trim() === '') return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/search?q=${query}`);
+      const params = new URLSearchParams({
+        q: query,
+        ...(categories ? { categories } : {})
+      });
+
+      const response = await fetch(`/api/search?${params}`);
       
       if (!response.ok) {
         throw new Error('Search failed');
       }
 
-      const results = await response.json();
-      setSearchResults(results);
+      const { data, pagination } = await response.json();
+      setSearchResults(data);
     } catch (error) {
       console.error('Search failed:', error);
       setError('Unable to perform search. Please try again.');
@@ -78,41 +81,43 @@ export default function Home() {
       
       <section className="flex flex-col w-full mx-auto py-8 max-w-[900px]">
         <div className="bg-white p-8 rounded-lg shadow-md w-full">
-          <h2 className="text-2xl font-semibold mb-6">Locations Database</h2>
+          <h2 className="text-2xl font-semibold mb-6">Businesses Database</h2>
           
           {isLoading ? (
             <div className="text-center py-8">
-              <p className="text-gray-500">Searching restaurants...</p>
+              <p className="text-gray-500">Searching businesses...</p>
             </div>
           ) : searchResults.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {searchResults.map((restaurant, index) => (
+              {searchResults.map((business, index) => (
                 <div 
                   key={index} 
                   className="bg-gray-100 p-4 rounded-lg shadow-sm"
                 >
-                  <h3 className="font-semibold">{restaurant.name}</h3>
+                  <h3 className="font-semibold">{business.name}</h3>
                   <p className="text-sm text-gray-600">
-                    {restaurant.categories.map(cat => cat.title).join(', ')}
+                    {business.categories.map(cat => cat.title).join(', ')}
                   </p>
                   <div className="flex justify-between items-center mt-2">
-                    <span className="text-yellow-500">★ {restaurant.rating}</span>
-                    <a 
-                      href={restaurant.yelp_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-blue-500 text-sm hover:underline"
-                    >
-                      View on Yelp
-                    </a>
+                    <span className="text-yellow-500">★ {business.rating}</span>
+                    {business.yelp_url && (
+                      <a 
+                        href={business.yelp_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-blue-500 text-sm hover:underline"
+                      >
+                        View Details
+                      </a>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
             <div className="p-6 border-2 border-dashed border-gray-300 rounded-lg text-center">
-              <p className="text-lg text-gray-500">Search for restaurants in NYC</p>
-              <p className="mt-2 text-sm text-gray-400">Start typing to find your next meal</p>
+              <p className="text-lg text-gray-500">Search for businesses in NYC</p>
+              <p className="mt-2 text-sm text-gray-400">Start typing to find what you're looking for</p>
             </div>
           )}
         </div>
