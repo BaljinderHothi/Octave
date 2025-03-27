@@ -81,35 +81,41 @@ export default function Profile() {
     }
 
     setUploadingPhoto(true);
-    const formData = new FormData();
-    formData.append('profilePicture', file);
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('No authentication token found');
+      //make sure to convert file to base64
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64Image = e.target?.result as string;
+        
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No authentication token found');
 
-      const response = await fetch('/api/user/upload-profile-picture', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
+        const response = await fetch('/api/user/upload-profile-picture', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ image: base64Image })
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to upload photo');
-      }
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to upload photo');
+        }
 
-      setProfile(prev => prev ? { ...prev, profilePicture: data.data.profilePicture } : null);
+        setProfile(prev => prev ? { ...prev, profilePicture: data.data.profilePicture } : null);
+      };
+      reader.readAsDataURL(file);
     } catch (err) {
       console.error('Error uploading photo:', err);
       alert(err instanceof Error ? err.message : 'Failed to upload photo. Please try again.');
     } finally {
       setUploadingPhoto(false);
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';  
+        fileInputRef.current.value = '';
       }
     }
   };
@@ -130,7 +136,6 @@ export default function Profile() {
     );
   }
 
-  //displays user profile info in a card-like format
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">

@@ -1,17 +1,16 @@
 //API endpoint to handle user profile picture upload
+//it'll be stored in MongoDB with the user schema 
 
 import { NextApiResponse } from 'next';
-import { withAuth, AuthenticatedRequest } from '../../../lib/auth';
-import dbConnect from '../../../lib/mongoose';
-import User from '../../../models/User';
-import formidable, { Fields, Files } from 'formidable';
-import { createWriteStream } from 'fs';
-import path from 'path';
-import fs from 'fs/promises';
+import { withAuth, AuthenticatedRequest } from '@/lib/auth';
+import dbConnect from '@/lib/mongoose';
+import User from '@/models/User';
 
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: {
+      sizeLimit: '5mb',
+    },
   },
 };
 
@@ -22,42 +21,21 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
 
   try {
     await dbConnect();
-    //create uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-    try {
-      await fs.access(uploadsDir);
-    } catch {
-      await fs.mkdir(uploadsDir, { recursive: true });
+
+    const { image } = req.body;
+    
+    if (!image) {
+      return res.status(400).json({ success: false, message: 'No image provided' });
     }
 
-    const form = formidable({
-      uploadDir: uploadsDir,
-      keepExtensions: true,
-      maxFileSize: 5 * 1024 * 1024,
-    });
-    //parses form data
-    const [fields, files] = await new Promise<[Fields, Files]>((resolve, reject) => {
-      form.parse(req, (err, fields, files) => {
-        if (err) reject(err);
-        resolve([fields, files]);
-      });
-    });
-    //gets and validates that a file was uploaded
-    const file = files.profilePicture?.[0];
-    if (!file) {
-      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    if (!image.startsWith('data:image/')) {
+      return res.status(400).json({ success: false, message: 'Invalid image format' });
     }
 
-    const ext = path.extname(file.originalFilename || '');
-    const filename = `${req.user._id}-${Date.now()}${ext}`;
-    const finalPath = path.join(uploadsDir, filename);
-
-    await fs.rename(file.filepath, finalPath);
-
-    const pictureUrl = `/uploads/${filename}`;
+    //update the user with image
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
-      { $set: { profilePicture: pictureUrl } },
+      { $set: { profilePicture: image } },
       { new: true }
     );
 
@@ -72,7 +50,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       success: true,
       message: 'Profile picture updated successfully',
       data: {
-        profilePicture: pictureUrl
+        profilePicture: image
       }
     });
   } catch (error) {
