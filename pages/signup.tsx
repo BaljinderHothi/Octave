@@ -2,6 +2,7 @@
 // Once a user finishes and clicks "continue", they will be routed to user preference page to complete their profile build.
 
 import { useState, ChangeEvent, FormEvent } from 'react'
+
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 
@@ -9,6 +10,11 @@ export default function Signup() {
   const router = useRouter()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+
+
+
+
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -22,6 +28,7 @@ export default function Signup() {
     year: '',
     phone: '',
   })
+
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -74,16 +81,17 @@ export default function Signup() {
         throw new Error(data.message || 'Registration failed')
       }
 
-      // Store the token in localStorage
+ 
       localStorage.setItem('token', data.token)
       
-      // Redirect to preferences page
+ 
       router.push('/userpreference')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')
     } finally {
       setLoading(false)
     }
+
   }
 
   const days = Array.from({ length: 31 }, (_, i) => i + 1)
@@ -98,12 +106,14 @@ export default function Signup() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <section className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-5">Create an Account</h1>
+
         
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
             {error}
           </div>
         )}
+
 
         <form className="space-y-3" onSubmit={handleSubmit}>
           <div className="flex gap-4">
@@ -139,6 +149,7 @@ export default function Signup() {
           <input type="text" id="zipCode" name="zipCode" value={form.zipCode} onChange={handleChange}
             className={inputClass} required />
 
+
           <label className={labelClass}>Date of Birth</label>
           <div className="flex gap-2">
             <select name="day" value={form.day} onChange={handleChange} className={selectClass} required>
@@ -165,6 +176,7 @@ export default function Signup() {
           <input type="tel" id="phone" name="phone" value={form.phone} onChange={handleChange}
             className={inputClass} />
 
+
           <button 
             type="submit"
             disabled={loading}
@@ -188,3 +200,4 @@ export default function Signup() {
     </div>
   )
 }
+

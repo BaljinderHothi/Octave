@@ -2,6 +2,7 @@
 // Users can come back to this page from "Profile" after registeration to adjust their preferences.
 // This page routes the user to the "Homepage", or back to registeration form "sign up" page if they click "back".
 
+
 import { useState, ChangeEvent, KeyboardEvent, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
@@ -11,6 +12,7 @@ export default function UserPreference() {
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isNewUser, setIsNewUser] = useState(false)
+
   const [form, setForm] = useState({
     food: [] as string[],
     activity: [] as string[],
@@ -24,7 +26,8 @@ export default function UserPreference() {
     tellUsMore: ''
   })
 
-  // Check for token and load existing preferences
+
+ 
   useEffect(() => {
     const loadPreferences = async () => {
       const token = localStorage.getItem('token')
@@ -34,7 +37,7 @@ export default function UserPreference() {
       }
 
       try {
-        // Fetch existing preferences
+        
         const response = await fetch('/api/user/preferences', {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -43,7 +46,7 @@ export default function UserPreference() {
 
         if (response.ok) {
           const data = await response.json()
-          // Update form with existing preferences
+          
           setForm(prev => ({
             ...prev,
             food: data.data.food || [],
@@ -70,7 +73,7 @@ export default function UserPreference() {
     loadPreferences()
   }, [router])
 
-  // Show loading state while checking authentication
+  
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -79,15 +82,17 @@ export default function UserPreference() {
     )
   }
 
-  // Don't render the form if not authenticated
+  
   if (!isAuthenticated) {
     return null
   }
+
 
   const inputClass = "mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none"
   const labelClass = "block text-xl font-semibold text-gray-800"
   const boxClass = "border rounded-md p-4 bg-white shadow-sm space-y-3 w-full max-w-xs"
   const sectionClass = "flex flex-col items-center justify-center min-h-screen bg-gray-100"
+
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -104,7 +109,7 @@ export default function UserPreference() {
         throw new Error('No authentication token found')
       }
 
-      // Send preferences directly in the request body
+      
       const response = await fetch('/api/user/preferences', {
         method: 'PUT',
         headers: {
@@ -125,10 +130,10 @@ export default function UserPreference() {
         throw new Error(data.message || 'Failed to save preferences')
       }
 
-      // Show success message before redirecting
+      
       alert('Preferences saved successfully!')
       
-      // Redirect to home page after successful save
+      
       router.push('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save preferences')
@@ -158,6 +163,7 @@ export default function UserPreference() {
         [category]: [...prev[category], prev[field].trim()], 
         [field]: ''
       }))
+
     }
   }
 
@@ -185,10 +191,12 @@ export default function UserPreference() {
             type="button"
             className="mr-1 text-white font-bold"
             onClick={() =>
+
               setForm(prev => ({
                 ...prev, 
                 [category]: prev[category].filter((_, index) => index !== i)
               }))}
+
           >
             X
           </button>
@@ -200,6 +208,7 @@ export default function UserPreference() {
 
   return (
     <section className={sectionClass}>
+
       <h1 className="text-3xl font-bold mb-1">
         {isNewUser ? 'Tell us what you like!' : 'Update Your Preferences'}
       </h1>
@@ -215,11 +224,13 @@ export default function UserPreference() {
         </div>
       )}
 
+
       <div className="flex gap-6 flex-wrap justify-center">
         <div className={boxClass}>
           <label className={labelClass}>Food Preferences:</label>
           <p className="text-sm text-gray-600">Favorite cuisines and dishes? You can add more in "Other"!</p>
           {renderCheckboxes(["Italian", "Mexican", "Sushi", "BBQ", "Vegan", "Fast Food", "Pizza", "Indian", "Latin Fusion"], 'food')}
+
           <input 
             type="text" 
             name="otherFood" 
@@ -229,6 +240,7 @@ export default function UserPreference() {
             placeholder='Other (Type and press Enter)' 
             className={inputClass} 
           />
+
           {renderTags(form.otherFoodList, 'otherFoodList')}
         </div>
 
@@ -236,6 +248,7 @@ export default function UserPreference() {
           <label className={labelClass}>Activities:</label>
           <p className="text-sm text-gray-600">What activities do you enjoy? You can add more in "Other"!</p>
           {renderCheckboxes(["Bowling", "Billiards", "Rock Climbing", "Night Life", "Movies", "Running", "Swimming", "Yoga", "Dancing"], 'activity')}
+
           <input 
             type="text" 
             name="otherActivity" 
@@ -245,6 +258,7 @@ export default function UserPreference() {
             placeholder='Other (Type and press Enter)' 
             className={inputClass} 
           />
+
           {renderTags(form.otherActivityList, 'otherActivityList')}
         </div>
 
@@ -252,6 +266,7 @@ export default function UserPreference() {
           <label className={labelClass}>Places to Visit:</label>
           <p className="text-sm text-gray-600">Favorite places to visit? You can add more in "Other"!</p>
           {renderCheckboxes(["Museums", "Parks", "Zoos", "Landmarks", "Tourist Attractions", "Beaches", "Theaters", "Malls", "Libraries"], 'places')}
+
           <input 
             type="text" 
             name="otherPlaces" 
@@ -261,12 +276,14 @@ export default function UserPreference() {
             placeholder='Other (Type and press Enter)' 
             className={inputClass} 
           />
+
           {renderTags(form.otherPlacesList, 'otherPlacesList')}
         </div>
 
         <div className={boxClass}>
           <label className={labelClass}>Tell Us More!:</label>
           <p className="text-sm text-gray-600">Did we miss anything? Feel free to write anything you'd like us to know about you</p>
+
           <textarea 
             name="tellUsMore" 
             value={form.tellUsMore} 
@@ -275,10 +292,12 @@ export default function UserPreference() {
             className={inputClass} 
             placeholder="Tell us anything else you'd like us to know about you" 
           />
+
         </div>
       </div>
 
       <div className="flex gap-4 mt-8">
+
         <button 
           onClick={handleBack} 
           disabled={loading}
@@ -293,6 +312,7 @@ export default function UserPreference() {
         >
           {loading ? 'Saving...' : isNewUser ? 'Continue' : 'Save Changes'}
         </button>
+
       </div>
     </section>
   )
