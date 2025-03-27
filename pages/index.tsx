@@ -1,3 +1,14 @@
+/* 
+This page is meant to show a list of popular restaurants and recommended ones as well as we use teh search bar on top to find different restaurants 
+and we return the ones that are recommended and match their parameters
+some things we need to keep in mind as we improve are :
+
+- use React state for search results
+- create search API endpoint
+- implement error handling
+- design responsive layout
+*/
+
 import type { FC } from 'react'
 import { Soup } from 'lucide-react'
 
