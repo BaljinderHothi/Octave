@@ -1,18 +1,9 @@
+// This is the User Preference Page, basically Sign Up page II. Where users enter their preferences by either checking boxes, or writing it generating a tag.
+// Users can come back to this page from "Profile" after registeration to adjust their preferences.
+// This page routes the user to the "Homepage", or back to registeration form "sign up" page if they click "back".
+
 import { useState, ChangeEvent, KeyboardEvent, useEffect } from 'react'
 import { useRouter } from 'next/router'
-
-interface FormState {
-  food: string[];
-  activity: string[];
-  places: string[];
-  otherFood: string;
-  otherActivity: string;
-  otherPlaces: string;
-  otherFoodList: string[];
-  otherActivityList: string[];
-  otherPlacesList: string[];
-  tellUsMore: string;
-}
 
 const DEFAULT_FOOD_OPTIONS = ["Italian", "Mexican", "Sushi", "BBQ", "Vegan", "Fast Food", "Pizza", "Indian", "Latin Fusion"];
 const DEFAULT_ACTIVITY_OPTIONS = ["Bowling", "Billiards", "Rock Climbing", "Night Life", "Movies", "Running", "Swimming", "Yoga", "Dancing"];
@@ -24,16 +15,16 @@ export default function UserPreference() {
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isNewUser, setIsNewUser] = useState(false)
-  const [form, setForm] = useState<FormState>({
-    food: [],
-    activity: [],
-    places: [],
+  const [form, setForm] = useState({
+    food: [] as string[],
+    activity: [] as string[],
+    places: [] as string[],
     otherFood: '',
     otherActivity: '',
     otherPlaces: '',
-    otherFoodList: [],
-    otherActivityList: [],
-    otherPlacesList: [],
+    otherFoodList: [] as string[],
+    otherActivityList: [] as string[],
+    otherPlacesList: [] as string[],
     tellUsMore: ''
   })
 
