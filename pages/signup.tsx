@@ -2,9 +2,19 @@
 // Once a user finishes and clicks "continue", they will be routed to user preference page to complete their profile build.
 
 import { useState, ChangeEvent, FormEvent } from 'react'
-import useRouter from 'next/router'
+
+import { useRouter } from 'next/router'
+import Link from 'next/link'
 
 export default function Signup() {
+  const router = useRouter()
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+
+
+
+
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -12,15 +22,76 @@ export default function Signup() {
     email: '',
     password: '',
     confirmPassword: '',
+    zipCode: '',
     day: '',
     month: '',
     year: '',
     phone: '',
   })
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))}
-  const handleSubmit = (e: FormEvent) => {e.preventDefault() 
-    useRouter.push('/userpreference')
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+    setError('')
+  }
+
+  const validateForm = () => {
+    if (!form.email || !form.password || !form.zipCode) {
+      setError('Email, password, and zip code are required')
+      return false
+    }
+    if (form.password !== form.confirmPassword) {
+      setError('Passwords do not match')
+      return false
+    }
+    if (form.password.length < 6) {
+      setError('Password must be at least 6 characters long')
+      return false
+    }
+    return true
+  }
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    
+    if (!validateForm()) return
+
+    setLoading(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: form.firstName,
+          lastName: form.lastName,
+          username: form.username,
+          email: form.email,
+          password: form.password,
+          zipCode: form.zipCode,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed')
+      }
+
+ 
+      localStorage.setItem('token', data.token)
+      
+ 
+      router.push('/userpreference')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed')
+    } finally {
+      setLoading(false)
+    }
+
   }
 
   const days = Array.from({ length: 31 }, (_, i) => i + 1)
@@ -35,6 +106,15 @@ export default function Signup() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <section className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-5">Create an Account</h1>
+
+        
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
+
+
         <form className="space-y-3" onSubmit={handleSubmit}>
           <div className="flex gap-4">
             <div className="flex-1">
@@ -65,6 +145,11 @@ export default function Signup() {
           <input type="password" id="confirmPassword" name="confirmPassword" value={form.confirmPassword} onChange={handleChange}
             className={inputClass} required />
 
+          <label className={labelClass} htmlFor="zipCode">Zip Code</label>
+          <input type="text" id="zipCode" name="zipCode" value={form.zipCode} onChange={handleChange}
+            className={inputClass} required />
+
+
           <label className={labelClass}>Date of Birth</label>
           <div className="flex gap-2">
             <select name="day" value={form.day} onChange={handleChange} className={selectClass} required>
@@ -91,11 +176,28 @@ export default function Signup() {
           <input type="tel" id="phone" name="phone" value={form.phone} onChange={handleChange}
             className={inputClass} />
 
-          <button type="submit"
-            className="w-full py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white"
-            style={{ backgroundColor: '#007bff' }}>
-            Continue
+
+          <button 
+            type="submit"
+            disabled={loading}
+            className={`w-full py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white ${
+              loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+            style={{ backgroundColor: "#003049" }}
+          >
+            {loading ? 'Creating Account...' : 'Continue'}
           </button>
         </form>
+        <div className="mt-6">
+            <p className="text-center text-sm text-gray-600">
+              Already have an account?{' '}
+              <Link href="/login" className="font-medium" style={{ color: "#003049" }}>
+                Login
+              </Link>
+            </p>
+          </div>
       </section>
-    </div>)}
+    </div>
+  )
+}
+
