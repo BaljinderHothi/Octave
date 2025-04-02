@@ -1,6 +1,7 @@
+//schema for badges
+
 import mongoose, { Document, Schema } from 'mongoose';
 
-// Define the Badge interface
 export interface IBadge extends Document {
   name: string;
   description: string;
@@ -16,7 +17,6 @@ export interface IBadge extends Document {
   updatedAt: Date;
 }
 
-// Define the Badge schema
 const BadgeSchema = new Schema(
   {
     name: { 
@@ -64,12 +64,10 @@ const BadgeSchema = new Schema(
   }
 );
 
-// Add indexes for efficient querying
 BadgeSchema.index({ name: 1 }, { unique: true });
 BadgeSchema.index({ 'criteria.type': 1 });
 BadgeSchema.index({ level: 1 });
 
-// Don't recreate the model if it already exists
 const Badge = mongoose.models.Badge || mongoose.model<IBadge>('Badge', BadgeSchema);
 
 export default Badge; 

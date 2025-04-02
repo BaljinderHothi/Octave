@@ -1,6 +1,7 @@
+//schema for reviews
+
 import mongoose, { Document, Schema } from 'mongoose';
 
-// Define the Review interface 
 export interface IReview extends Document {
   accurateDate: string;
   address: string;
@@ -28,7 +29,6 @@ export interface IReview extends Document {
   reviewUrl: string;
 }
 
-// Define the Review schema
 const ReviewSchema = new Schema(
   {
     accurateDate: { type: String },
@@ -67,7 +67,6 @@ ReviewSchema.index({ place_id: 1 });
 ReviewSchema.index({ reviewRating: -1 });
 ReviewSchema.index({ dateCreated: -1 });
 
-// Don't recreate the model if it already exists
 const Review = mongoose.models.Review || mongoose.model<IReview>('Review', ReviewSchema);
 
 export default Review; 

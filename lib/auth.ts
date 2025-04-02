@@ -1,9 +1,10 @@
+//provides auth middleware that verifies JWT tokens, attaches user data to api requests
+
 import { NextApiRequest, NextApiResponse } from 'next';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import dbConnect from './mongoose';
 
-// Ensure JWT_SECRET exists
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is not set');
 }
@@ -54,7 +55,6 @@ export function withAuth(handler: NextApiHandler) {
   };
 }
 
-// Client-side logout function
 export function logout() {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('token');

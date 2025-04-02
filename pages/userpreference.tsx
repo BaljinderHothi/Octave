@@ -37,7 +37,7 @@ export default function UserPreference() {
       }
 
       try {
-        
+
         const response = await fetch('/api/user/preferences', {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -47,14 +47,22 @@ export default function UserPreference() {
         if (response.ok) {
           const data = await response.json()
           
+
+          //we have to properly remove duplicates from the data
+          //use Set and convert to array
+          const uniqueFood = Array.from(new Set<string>(data.data.food || []))
+          const uniqueActivities = Array.from(new Set<string>(data.data.activities || []))
+          const uniquePlaces = Array.from(new Set<string>(data.data.places || []))
+
+
           setForm(prev => ({
             ...prev,
-            food: data.data.food || [],
-            activity: data.data.activities || [],
-            places: data.data.places || [],
-            otherFoodList: data.data.food?.filter((item: string) => !["Italian", "Mexican", "Sushi", "BBQ", "Vegan", "Fast Food", "Pizza", "Indian", "Latin Fusion"].includes(item)) || [],
-            otherActivityList: data.data.activities?.filter((item: string) => !["Bowling", "Billiards", "Rock Climbing", "Night Life", "Movies", "Running", "Swimming", "Yoga", "Dancing"].includes(item)) || [],
-            otherPlacesList: data.data.places?.filter((item: string) => !["Museums", "Parks", "Zoos", "Landmarks", "Tourist Attractions", "Beaches", "Theaters", "Malls", "Libraries"].includes(item)) || [],
+            food: uniqueFood.filter(item => ["Italian", "Mexican", "Sushi", "BBQ", "Vegan", "Fast Food", "Pizza", "Indian", "Latin Fusion"].includes(item)),
+            activity: uniqueActivities.filter(item => ["Bowling", "Billiards", "Rock Climbing", "Night Life", "Movies", "Running", "Swimming", "Yoga", "Dancing"].includes(item)),
+            places: uniquePlaces.filter(item => ["Museums", "Parks", "Zoos", "Landmarks", "Tourist Attractions", "Beaches", "Theaters", "Malls", "Libraries"].includes(item)),
+            otherFoodList: uniqueFood.filter(item => !["Italian", "Mexican", "Sushi", "BBQ", "Vegan", "Fast Food", "Pizza", "Indian", "Latin Fusion"].includes(item)),
+            otherActivityList: uniqueActivities.filter(item => !["Bowling", "Billiards", "Rock Climbing", "Night Life", "Movies", "Running", "Swimming", "Yoga", "Dancing"].includes(item)),
+            otherPlacesList: uniquePlaces.filter(item => !["Museums", "Parks", "Zoos", "Landmarks", "Tourist Attractions", "Beaches", "Theaters", "Malls", "Libraries"].includes(item)),
             tellUsMore: data.data.custom?.[0] || ''
           }))
           setIsNewUser(false)
@@ -82,7 +90,7 @@ export default function UserPreference() {
     )
   }
 
-  
+
   if (!isAuthenticated) {
     return null
   }
@@ -109,7 +117,13 @@ export default function UserPreference() {
         throw new Error('No authentication token found')
       }
 
-      
+
+      //make sure no duplicates happen when combining the checklist and custom preferences
+      const uniqueFood = Array.from(new Set<string>([...form.food, ...form.otherFoodList]))
+      const uniqueActivities = Array.from(new Set<string>([...form.activity, ...form.otherActivityList]))
+      const uniquePlaces = Array.from(new Set<string>([...form.places, ...form.otherPlacesList]))
+
+
       const response = await fetch('/api/user/preferences', {
         method: 'PUT',
         headers: {
@@ -117,9 +131,9 @@ export default function UserPreference() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          food: [...form.food, ...form.otherFoodList],
-          activities: [...form.activity, ...form.otherActivityList],
-          places: [...form.places, ...form.otherPlacesList],
+          food: uniqueFood,
+          activities: uniqueActivities,
+          places: uniquePlaces,
           custom: form.tellUsMore ? [form.tellUsMore] : []
         })
       })
@@ -130,10 +144,10 @@ export default function UserPreference() {
         throw new Error(data.message || 'Failed to save preferences')
       }
 
-      
+
       alert('Preferences saved successfully!')
       
-      
+
       router.push('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save preferences')

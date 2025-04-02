@@ -1,3 +1,6 @@
+//Creates nav bar for user auth
+//Links to home, itinerary, profile, settings, login/signup 
+
 import { Soup, Settings, CircleUserRound, LogOut } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
@@ -9,7 +12,6 @@ export default function Nav() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check if user is logged in
     const token = localStorage.getItem('token')
     setIsLoggedIn(!!token)
     setIsLoading(false)
@@ -34,11 +36,9 @@ export default function Nav() {
         throw new Error('Logout failed')
       }
 
-      // Clear token and update state
       localStorage.removeItem('token')
       setIsLoggedIn(false)
       
-      // Redirect to login
       router.push('/login')
     } catch (error) {
       console.error('Logout error:', error)

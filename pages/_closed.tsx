@@ -10,6 +10,6 @@ export default function Closed() {
       <p className="ml-4 text-gray-500 text-xl">
         Get your personalized NYC experience now.
       </p>
-    </div>
-  )
-}
+      </div>
+   )
+ }
