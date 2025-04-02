@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@types/formidable": "^3.4.5",
+    "@types/python-shell": "^0.4.2",
     "@vercel/edge-config": "0.1.0-canary.15",
     "bcryptjs": "^3.0.2",
     "formidable": "^3.5.2",
@@ -20,6 +21,7 @@
     "mongoose": "^8.12.2",
     "next": "canary",
     "next-auth": "^4.24.11",
+    "python-shell": "^5.0.0",
     "react": "latest",
     "react-dom": "latest"
   },

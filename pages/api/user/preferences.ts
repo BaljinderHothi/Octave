@@ -1,7 +1,7 @@
-//API endpoint to manage user preferences
-//GET = retrieve preference
-//PUT = update some/all categories if needed
-//PATCH = add new items to the categories
+// //API endpoint to manage user preferences
+// //GET = retrieve preference
+// //PUT = update some/all categories if needed
+// //PATCH = add new items to the categories
 
 import { NextApiResponse } from 'next';
 import dbConnect from '../../../lib/mongoose';
@@ -14,7 +14,7 @@ async function handler(
 ) {
   await dbConnect();
 
-  //Get user preferences
+  // GET - Get user preferences
   if (req.method === 'GET') {
     try {
       const user = req.user;
@@ -33,7 +33,7 @@ async function handler(
     }
   }
 
-  //Update user preferences
+  // PUT - Update user preferences
   if (req.method === 'PUT') {
     try {
       const { food, activities, places, custom } = req.body;
@@ -45,7 +45,7 @@ async function handler(
         });
       }
 
-      
+      // Build update object
       const updateData: any = {};
       
       if (food) updateData['preferences.food'] = food;
@@ -53,7 +53,7 @@ async function handler(
       if (places) updateData['preferences.places'] = places;
       if (custom) updateData['preferences.custom'] = custom;
 
-
+      // Update user preferences
       const updatedUser = await User.findByIdAndUpdate(
         req.user._id,
         { $set: updateData },
@@ -75,7 +75,7 @@ async function handler(
     }
   }
 
-  //Add new items to preference categories
+  // PATCH - Add new items to preference categories
   if (req.method === 'PATCH') {
     try {
       const { food, activities, places, custom } = req.body;
@@ -87,7 +87,7 @@ async function handler(
         });
       }
 
-
+      // Build update object
       const updateData: any = {};
       
       if (food && food.length > 0) updateData['preferences.food'] = food;
@@ -95,10 +95,10 @@ async function handler(
       if (places && places.length > 0) updateData['preferences.places'] = places;
       if (custom && custom.length > 0) updateData['preferences.custom'] = custom;
 
-
+      // Add items to preference arrays
       const updatedUser = await User.findByIdAndUpdate(
         req.user._id,
-        { $addToSet: updateData }, 
+        { $addToSet: updateData }, // Use $addToSet to avoid duplicates
         { new: true, runValidators: true }
       );
 
@@ -117,6 +117,7 @@ async function handler(
     }
   }
 
+  // If method not supported
   return res.status(405).json({
     success: false,
     message: 'Method not allowed'
