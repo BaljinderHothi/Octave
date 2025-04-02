@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  //Yelp images so that we can just display them when needed on frontend
   images: {
     remotePatterns: [
       {

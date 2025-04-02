@@ -74,10 +74,9 @@ export default function Signup() {
         throw new Error(data.message || 'Registration failed')
       }
 
-      // Store the token in localStorage
       localStorage.setItem('token', data.token)
       
-      // Redirect to preferences page
+
       router.push('/userpreference')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')
