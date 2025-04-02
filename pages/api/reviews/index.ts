@@ -1,3 +1,5 @@
+//API endpoint for fetching reviews in general
+
 import { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from '../../../lib/mongoose';
 import Review from '../../../models/Review';
@@ -8,21 +10,20 @@ export default async function handler(
 ) {
   await dbConnect();
 
-  // GET - Fetch reviews (with filters)
+  //Fetch reviews
   if (req.method === 'GET') {
     try {
       const {
-        place_id, // Place ID (from Google Maps)
-        name, // Business name
-        author, // Author name
-        rating, // Minimum rating
-        sort = 'dateCreated', // Sort field
-        order = 'desc', // Sort order
-        page = 1, // Page number
-        limit = 10 // Items per page
+        place_id, 
+        name, 
+        author, 
+        rating, 
+        sort = 'dateCreated', 
+        order = 'desc', 
+        page = 1, 
+        limit = 10 
       } = req.query;
 
-      // Build query
       const query: any = {};
 
       if (place_id) {

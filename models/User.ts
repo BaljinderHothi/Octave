@@ -1,6 +1,7 @@
+//schema for users
+
 import mongoose, { Document, Schema } from 'mongoose';
 
-// Define the User interface
 export interface IUser extends Document {
   firstName: string;
   lastName: string;
@@ -8,6 +9,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   zipCode: string;
+  profilePicture: string;
   preferences: {
     food: string[];
     activities: string[];
@@ -19,7 +21,6 @@ export interface IUser extends Document {
   createdAt: Date;
 }
 
-// Define the User schema
 const UserSchema = new Schema(
   {
     firstName: { type: String },
@@ -28,6 +29,7 @@ const UserSchema = new Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     zipCode: { type: String, required: true },
+    profilePicture: { type: String, default: '' },
     preferences: {
       food: { type: [String], default: [] },
       activities: { type: [String], default: [] },
@@ -49,7 +51,6 @@ const UserSchema = new Schema(
   { collection: "users" }
 );
 
-// Don't recreate the model if it already exists
 const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 
 export default User; 

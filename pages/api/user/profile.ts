@@ -1,3 +1,8 @@
+//API endpoint to handle user profile management
+//GET = retrieve user profile
+//PUT = update user profile
+//DELETE = delete user account
+
 import { NextApiResponse } from 'next';
 import dbConnect from '../../../lib/mongoose';
 import User from '../../../models/User';
@@ -10,13 +15,13 @@ async function handler(
 ) {
   await dbConnect();
 
-  // GET - Fetch user profile
+  //Fetch user profile
   if (req.method === 'GET') {
     try {
-      // User already attached by auth middleware
+     
       const user = req.user;
       
-      // Return user without password
+
       const userObject = user.toObject();
       delete userObject.password;
 
@@ -34,12 +39,11 @@ async function handler(
     }
   }
 
-  // PUT - Update user profile
+  //Update user profile
   if (req.method === 'PUT') {
     try {
       const { firstName, lastName, username, zipCode, password, preferences } = req.body;
 
-      // Check if username exists if being updated
       if (username && username !== req.user.username) {
         const existingUsername = await User.findOne({ username });
         if (existingUsername) {
@@ -50,7 +54,7 @@ async function handler(
         }
       }
 
-      // Build update object
+
       const updateData: any = {};
       
       if (firstName) updateData.firstName = firstName;
@@ -58,29 +62,25 @@ async function handler(
       if (username) updateData.username = username;
       if (zipCode) updateData.zipCode = zipCode;
       
-      // Preferences update
+
       if (preferences) {
-        // Update only the provided preference categories
         if (preferences.food) updateData['preferences.food'] = preferences.food;
         if (preferences.activities) updateData['preferences.activities'] = preferences.activities;
         if (preferences.places) updateData['preferences.places'] = preferences.places;
         if (preferences.custom) updateData['preferences.custom'] = preferences.custom;
       }
 
-      // Password update
       if (password) {
         const salt = await bcrypt.genSalt(10);
         updateData.password = await bcrypt.hash(password, salt);
       }
 
-      // Profile update
       const updatedUser = await User.findByIdAndUpdate(
         req.user._id,
         { $set: updateData },
         { new: true, runValidators: true }
       );
 
-      // Return updated user without password
       const userObject = updatedUser.toObject();
       delete userObject.password;
 
@@ -99,10 +99,9 @@ async function handler(
     }
   }
 
-  // DELETE - Delete user account
+  //Delete user account
   if (req.method === 'DELETE') {
     try {
-      // Delete the user
       await User.findByIdAndDelete(req.user._id);
 
       return res.status(200).json({

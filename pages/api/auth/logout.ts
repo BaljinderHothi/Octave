@@ -1,3 +1,5 @@
+//API endpoint for user logout
+
 import { NextApiRequest, NextApiResponse } from 'next';
 import { withAuth, AuthenticatedRequest } from '../../../lib/auth';
 

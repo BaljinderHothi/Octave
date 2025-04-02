@@ -1,6 +1,7 @@
+//schema for saved lists, like favorites, wishlist, (custom will come after MVP)
+
 import mongoose, { Document, Schema } from 'mongoose';
 
-// Define the SavedList interface
 export interface ISavedList extends Document {
   user: mongoose.Types.ObjectId;
   name: string;
@@ -12,7 +13,6 @@ export interface ISavedList extends Document {
   updatedAt: Date;
 }
 
-// Define the SavedList schema
 const SavedListSchema = new Schema(
   {
     user: { 
@@ -50,11 +50,9 @@ const SavedListSchema = new Schema(
   }
 );
 
-// Add compound index to prevent duplicate list names for a user
 SavedListSchema.index({ user: 1, name: 1 }, { unique: true });
 SavedListSchema.index({ user: 1, type: 1 });
 
-// Don't recreate the model if it already exists
 const SavedList = mongoose.models.SavedList || mongoose.model<ISavedList>('SavedList', SavedListSchema);
 
 export default SavedList; 

@@ -1,3 +1,7 @@
+//API endpoint for fetching businesses in general
+//can search, filter, sort, and paginate businesses
+
+
 import { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from '../../../lib/mongoose';
 import mongoose from 'mongoose';
@@ -8,20 +12,19 @@ export default async function handler(
 ) {
   await dbConnect();
 
-  // GET - Fetch and search businesses
+  //Fetch and search businesses
   if (req.method === 'GET') {
     try {
       const {
-        q, // Text search query
-        categories, // Categories (comma-separated)
-        rating, // Minimum rating
-        sort = 'rating', // Sort field
-        order = 'desc', // Sort order
-        page = 1, // Page number
-        limit = 10 // Items per page
+        q, 
+        categories, 
+        rating, 
+        sort = 'rating', 
+        order = 'desc', 
+        page = 1, 
+        limit = 10 
       } = req.query;
 
-      // Connect directly to the businesses collection
       const db = mongoose.connection.db;
       if (!db) {
         throw new Error('Failed to connect to database');
