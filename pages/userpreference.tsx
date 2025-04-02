@@ -2,6 +2,7 @@
 // Users can come back to this page from "Profile" after registeration to adjust their preferences.
 // This page routes the user to the "Homepage", or back to registeration form "sign up" page if they click "back".
 
+
 import { useState, ChangeEvent, KeyboardEvent, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
@@ -36,6 +37,7 @@ export default function UserPreference() {
       }
 
       try {
+
         const response = await fetch('/api/user/preferences', {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -45,11 +47,13 @@ export default function UserPreference() {
         if (response.ok) {
           const data = await response.json()
           
+
           //we have to properly remove duplicates from the data
           //use Set and convert to array
           const uniqueFood = Array.from(new Set<string>(data.data.food || []))
           const uniqueActivities = Array.from(new Set<string>(data.data.activities || []))
           const uniquePlaces = Array.from(new Set<string>(data.data.places || []))
+
 
           setForm(prev => ({
             ...prev,
@@ -86,9 +90,11 @@ export default function UserPreference() {
     )
   }
 
+
   if (!isAuthenticated) {
     return null
   }
+
 
   const inputClass = "mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none"
   const labelClass = "block text-xl font-semibold text-gray-800"
@@ -111,10 +117,12 @@ export default function UserPreference() {
         throw new Error('No authentication token found')
       }
 
+
       //make sure no duplicates happen when combining the checklist and custom preferences
       const uniqueFood = Array.from(new Set<string>([...form.food, ...form.otherFoodList]))
       const uniqueActivities = Array.from(new Set<string>([...form.activity, ...form.otherActivityList]))
       const uniquePlaces = Array.from(new Set<string>([...form.places, ...form.otherPlacesList]))
+
 
       const response = await fetch('/api/user/preferences', {
         method: 'PUT',
@@ -136,7 +144,10 @@ export default function UserPreference() {
         throw new Error(data.message || 'Failed to save preferences')
       }
 
+
       alert('Preferences saved successfully!')
+      
+
       router.push('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save preferences')

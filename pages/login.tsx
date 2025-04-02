@@ -122,6 +122,13 @@ export default function Login() {
           </p>
         </div>
       </div>
+
+
+      
+      <p className="mt-8 text-center text-sm text-gray-500">
+      Continue your NYC adventure!
+      </p>
+
     </div>
   )
 }
