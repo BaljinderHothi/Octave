@@ -1,7 +1,6 @@
 //API endpoint for fetching businesses in general
 //can search, filter, sort, and paginate businesses
 
-
 import { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from '../../../lib/mongoose';
 import mongoose from 'mongoose';
@@ -29,7 +28,6 @@ export default async function handler(
       if (!db) {
         throw new Error('Failed to connect to database');
       }
-      
       const businessCollection = db.collection('businesses');
 
       const query: any = {};

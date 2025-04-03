@@ -2,6 +2,9 @@
 // just to make the current product look more like polished
 // this file can be deleted or erased easily 
 
+//4/2/25 i fixed the login to store both token and userid so that the homepage
+//could register the logged in user
+
 import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/router'
 import { Soup } from 'lucide-react'
@@ -41,12 +44,15 @@ export default function Login() {
         throw new Error(data.message || 'Login failed')
       }
 
-      // Store token in localStorage
+      //store token and userId in localStorage
       localStorage.setItem('token', data.token)
+      localStorage.setItem('userId', data.user.id)
       console.log('Token stored:', data.token)
+      console.log('UserId stored:', data.user.id)
       console.log('Token in localStorage:', localStorage.getItem('token'))
+      console.log('UserId in localStorage:', localStorage.getItem('userId'))
       
-      // Redirect to home page
+      //redirecting to home page
       router.push('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
