@@ -1,7 +1,6 @@
 //API endpoint for fetching businesses in general
 //can search, filter, sort, and paginate businesses
 
-
 import { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from '../../../lib/mongoose';
 import mongoose from 'mongoose';
