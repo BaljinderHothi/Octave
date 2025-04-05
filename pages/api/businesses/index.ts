@@ -21,14 +21,15 @@ export default async function handler(
         sort = 'rating', 
         order = 'desc', 
         page = 1, 
-        limit = 10 
+        limit = 5000
       } = req.query;
 
       const db = mongoose.connection.db;
       if (!db) {
         throw new Error('Failed to connect to database');
       }
-      const businessCollection = db.collection('businesses');
+      
+      const businessCollection = db.collection('nyc_businesses')
 
       const query: any = {};
 
