@@ -118,6 +118,22 @@ export default function BusinessPage() {
     );
   };
 
+  // phone number
+  const formatPhoneNumber = (phoneNumber: string) => {
+    if (!phoneNumber) return '';
+    
+    const cleaned = phoneNumber.replace(/\D/g, '');
+    
+    if (cleaned.length === 11 && cleaned.startsWith('1')) {
+      return `+1 ${cleaned.substring(1, 4)}-${cleaned.substring(4, 7)}-${cleaned.substring(7, 11)}`;
+    }
+    else if (cleaned.length === 10) {
+      return `+1 ${cleaned.substring(0, 3)}-${cleaned.substring(3, 6)}-${cleaned.substring(6, 10)}`;
+    }
+    
+    return phoneNumber;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -217,7 +233,7 @@ export default function BusinessPage() {
                       href={`tel:${business.phone}`}
                       className="text-blue-600 hover:underline"
                     >
-                      {business.display_phone || business.phone}
+                      {formatPhoneNumber(business.phone)}
                     </a>
                   </div>
                 )}
