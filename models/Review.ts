@@ -54,12 +54,11 @@ const ReviewSchema = new Schema(
   }
 );
 
-// Indexes for faster querying
 ReviewSchema.index({ businessId: 1 });
 ReviewSchema.index({ user: 1 });
 ReviewSchema.index({ rating: -1 });
 ReviewSchema.index({ createdAt: -1 });
-ReviewSchema.index({ businessId: 1, user: 1 }, { unique: true }); // One review per business per user
+ReviewSchema.index({ businessId: 1, user: 1 }, { unique: true }); 
 
 const Review = mongoose.models.Review || mongoose.model<IReview>('Review', ReviewSchema);
 

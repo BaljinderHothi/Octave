@@ -52,7 +52,6 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
         setLoading(true);
         const token = localStorage.getItem('token');
         
-        // Get user info if logged in
         if (token) {
           try {
             const userResponse = await fetch('/api/user/profile', {
@@ -70,31 +69,68 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
           }
         }
         
-        // Get reviews for this business
         console.log(`Fetching reviews for business ID: ${businessId}, page: ${page}`);
-        const reviewsUrl = `/api/businesses/${businessId}/reviews?page=${page}&limit=5`;
-        console.log('Fetching from URL:', reviewsUrl);
         
-        const response = await fetch(reviewsUrl);
+        const reviewsUrl = `/api/businesses/${businessId}/reviews?page=${page}&limit=3`;
+        console.log('First trying URL:', reviewsUrl);
         
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Error response:', errorText);
-          throw new Error(`Failed to fetch reviews: ${response.status} ${errorText}`);
+        try {
+          const response = await fetch(reviewsUrl);
+          console.log('Response status:', response.status);
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Reviews data:', data);
+            console.log(`Got ${data.data.length} reviews, page ${data.pagination.page} of ${data.pagination.pages}`);
+            
+            if (page === 1) {
+              setReviews(data.data);
+            } else {
+              setReviews(prevReviews => {
+                const existingIds = new Set(prevReviews.map(review => review._id));
+                const newReviews = data.data.filter((review: Review) => !existingIds.has(review._id));
+                console.log(`Adding ${newReviews.length} new unique reviews`);
+                return [...prevReviews, ...newReviews];
+              });
+            }
+            
+            setHasMore(data.pagination.page < data.pagination.pages);
+            console.log(`Has more pages: ${data.pagination.page < data.pagination.pages}`);
+            setError(null);
+            setLoading(false);
+            return; 
+          }
+        } catch (err) {
+          console.error('Error with first review endpoint:', err);
         }
         
-        const data = await response.json();
-        console.log('Reviews data:', data);
+        const fallbackUrl = `/api/reviews?businessId=${businessId}&page=${page}&limit=3`;
+        console.log('Falling back to URL:', fallbackUrl);
+        
+        const fallbackResponse = await fetch(fallbackUrl);
+        console.log('Fallback response status:', fallbackResponse.status);
+        
+        if (!fallbackResponse.ok) {
+          const errorText = await fallbackResponse.text();
+          console.error('Error response:', errorText);
+          throw new Error(`Failed to fetch reviews: ${fallbackResponse.status} ${errorText}`);
+        }
+        
+        const fallbackData = await fallbackResponse.json();
+        console.log('Fallback reviews data:', fallbackData);
         
         if (page === 1) {
-          setReviews(data.data);
+          setReviews(fallbackData.data);
         } else {
-          setReviews(prev => [...prev, ...data.data]);
+          setReviews(prevReviews => {
+            const existingIds = new Set(prevReviews.map(review => review._id));
+            const newReviews = fallbackData.data.filter((review: Review) => !existingIds.has(review._id));
+            console.log(`Adding ${newReviews.length} new unique reviews from fallback`);
+            return [...prevReviews, ...newReviews];
+          });
         }
         
-        setHasMore(data.pagination.page < data.pagination.pages);
+        setHasMore(fallbackData.pagination.page < fallbackData.pagination.pages);
         setError(null);
       } catch (err) {
         console.error('Error fetching reviews:', err);
@@ -107,7 +143,6 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
     fetchReviews();
   }, [businessId, page]);
 
-  // Handle submitting a new review
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -141,10 +176,8 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
 
       const data = await response.json();
       
-      // Add the new review to the list
       setReviews(prev => [data.data, ...prev]);
       
-      // Reset form
       setReviewText('');
       setReviewRating(5);
       setReviewImages([]);
@@ -155,7 +188,6 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
     }
   };
 
-  // Handle updating a review
   const handleUpdateReview = async (reviewId: string) => {
     try {
       const token = localStorage.getItem('token');
@@ -180,14 +212,12 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
 
       const data = await response.json();
       
-      // Update the review in the list
       setReviews(prev => 
         prev.map(review => 
           review._id === reviewId ? data.data : review
         )
       );
       
-      // Reset form
       setReviewText('');
       setReviewRating(5);
       setReviewImages([]);
@@ -198,7 +228,6 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
     }
   };
 
-  // Handle deleting a review
   const handleDeleteReview = async (reviewId: string) => {
     if (!confirm('Are you sure you want to delete this review?')) {
       return;
@@ -218,7 +247,6 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
         throw new Error(error.message || 'Failed to delete review');
       }
       
-      // Remove the review from the list
       setReviews(prev => prev.filter(review => review._id !== reviewId));
     } catch (err) {
       console.error('Error deleting review:', err);
@@ -226,7 +254,6 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
     }
   };
 
-  // Toggle expanded state for long reviews
   const toggleExpanded = (reviewId: string) => {
     setExpandedReviews(prev => {
       const next = new Set(prev);
@@ -239,7 +266,6 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
     });
   };
 
-  // Handler for edit button
   const handleEditClick = (review: Review) => {
     setEditingReview(review._id);
     setReviewText(review.text);
@@ -248,14 +274,17 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
     setIsPublic(review.isPublic);
   };
 
-  // Load more reviews
   const loadMoreReviews = () => {
     if (hasMore && !loading) {
+      console.log(`Loading more reviews, moving to page ${page + 1}`);
       setPage(prev => prev + 1);
     }
   };
 
-  // Render the rating stars
+  useEffect(() => {
+    console.log(`Page changed to ${page}, hasMore: ${hasMore}`);
+  }, [page, hasMore]);
+
   const renderStars = (rating: number, interactive = false) => {
     return (
       <div className="flex">
@@ -272,7 +301,6 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
     );
   };
 
-  // Format date to readable string
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -369,7 +397,8 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
         </div>
       ) : (
         <div className="space-y-6">
-          {reviews.map((review) => (
+          {/* Display only the first 3 reviews initially */}
+          {reviews.slice(0, page * 3).map((review) => (
             <div key={review._id} className="bg-gray-50 p-4 rounded-lg">
               {editingReview === review._id ? (
                 // Edit Review Form
@@ -531,7 +560,7 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
           ))}
           
           {/* Load More Button */}
-          {hasMore && (
+          {(hasMore || reviews.length > 3) && (
             <div className="text-center mt-4">
               <button
                 onClick={loadMoreReviews}
