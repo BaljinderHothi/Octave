@@ -29,7 +29,7 @@ export default async function handler(
         throw new Error('Failed to connect to database');
       }
       
-      const businessCollection = db.collection('nyc_businesses')
+      const businessCollection = db.collection('nyc_businesses');
 
       const query: any = {};
 
