@@ -99,7 +99,7 @@ export default function RandomItinerary() {
             </button>
           </div>
           {!item ? (
-            <p>Loading...</p>
+            <p>Click Generate!</p>
           ) : (
             <div className="flex gap-5">
               {item.image_url && (
