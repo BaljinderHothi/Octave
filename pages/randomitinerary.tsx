@@ -6,6 +6,10 @@ export default function RandomItinerary() {
   const [activity, setActivity] = useState<any>(null);
   const [place, setPlace] = useState<any>(null);
   
+  const foodAliases = ['restaurants','italian', 'mexican', 'sushi', 'bbq', 'vegan', 'fast food', 'pizza', 'indian', 'latin fusion', 'taco']
+  const activityAliases = ['billiards', 'poolhalls', 'bowling', 'rockclimbing', 'painting', 'rock climbing', 'movies', 'swimming', 'dancing']
+  const placeAliases = ['parks', 'museums', 'landmarks', 'beaches', 'zoos', 'libraries']
+
   const formatPhone = (phone: string) => {
     if (!phone) return 'N/A';
     const match = phone.match(/^\+1(\d{3})(\d{3})(\d{4})$/);
@@ -13,14 +17,27 @@ export default function RandomItinerary() {
   };
   
   const renderStars = (rating: number) => {
-    const fullStars = Math.floor(rating);
-    const emptyStars = 5 - fullStars;
     return (
-      <span>
-        {'★'.repeat(fullStars)}
-        {'☆'.repeat(emptyStars)}
-        <span className="ml-2 text-sm text-gray-600">({rating.toFixed(1)} / 5)</span>
+      <span className="flex items-center gap-1 text-yellow-500 font-bold">
+        {rating.toFixed(1)}
+        <span className="text-yellow-500">★</span>
       </span>
+    );
+  };
+
+  const renderCategories = (categories: any[]) => {
+    if (!Array.isArray(categories) || categories.length === 0) return null;
+  
+    return (
+      <div className="mt-1 text-sm text-gray-700">
+        <strong>Categories:</strong>{' '}
+        {categories.map((cat, idx) => (
+          <span key={idx}>
+            {cat.title}
+            {idx < categories.length - 1 ? ', ' : ''}
+          </span>
+        ))}
+      </div>
     );
   };
 
@@ -30,30 +47,46 @@ export default function RandomItinerary() {
       .then(data => {
         if (Array.isArray(data?.data) && data.data.length >= 3) {
           setBusinesses(data.data);
-          generateRandom(data.data);
         } else {
           console.warn('No data or not enough entries');
         }
       });
   }, []);
 
-  const pickRandom = () => businesses[Math.floor(Math.random() * businesses.length)];
+  const isStrictlyInCategory = (
+    business: any,
+    include: string[],
+    excludeGroups: string[][]
+  ) => {
+    if (!Array.isArray(business.categories)) return false
+    const aliases: string[] = business.categories.map((c: any) => c.alias.toLowerCase())
+    return (
+      aliases.some((alias: string) => include.includes(alias)) &&
+      !excludeGroups.some(group => group.some(ex => aliases.includes(ex)))
+    )
+  }
 
-  const generateRandom = (list = businesses) => {
-    const shuffled = [...list].sort(() => 0.5 - Math.random());
-    setFood(shuffled[0] || null);
-    setActivity(shuffled[1] || null);
-    setPlace(shuffled[2] || null);
-  };
+  const pickStrict = (include: string[], ...excludeGroups: string[][]) => {
+    const filtered = businesses.filter(b =>
+      isStrictlyInCategory(b, include, excludeGroups)
+    )
+    return filtered[Math.floor(Math.random() * filtered.length)] || null
+  }
+
+  const generateRandom = () => {
+    setFood(pickStrict(foodAliases, activityAliases, placeAliases))
+    setActivity(pickStrict(activityAliases, foodAliases, placeAliases))
+    setPlace(pickStrict(placeAliases, foodAliases, activityAliases))
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-2 py-2">
       <h1 className="text-3xl font-bold mb-100">Randomly Generated Itinerary:</h1>
 
       {[
-        { label: 'Food', item: food, set: () => setFood(pickRandom()) },
-        { label: 'Activity', item: activity, set: () => setActivity(pickRandom()) },
-        { label: 'Place', item: place, set: () => setPlace(pickRandom()) },
+        { label: 'Food', item: food, set: () => setFood(pickStrict(foodAliases, activityAliases, placeAliases)) },
+        { label: 'Activity', item: activity, set: () => setActivity(pickStrict(activityAliases, foodAliases, placeAliases)) },
+        { label: 'Place', item: place, set: () => setPlace(pickStrict(placeAliases, foodAliases, activityAliases)) },
       ].map(({ label, item, set }) => (
         <div
           key={label}
@@ -94,6 +127,7 @@ export default function RandomItinerary() {
                     )}
                   </div>
                 )}
+                {renderCategories(item.categories)}
               </div>
             </div>
           )}
