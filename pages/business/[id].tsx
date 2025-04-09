@@ -178,6 +178,12 @@ export default function BusinessPage() {
           </div>
         )}
         <div className="absolute inset-0 bg-black bg-opacity-30" />
+        <button
+          onClick={() => router.back()}
+          className="absolute top-20 left-10 text-2xl font-bold text-white hover:text-gray-300"
+        >
+          ← Back
+        </button>
       </div>
       
       <div className="max-w-4xl mx-auto -mt-16 relative z-10 px-4">
