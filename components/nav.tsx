@@ -75,6 +75,11 @@ export default function Nav() {
           <>
             <li>
               <Link href="/userpreference" className="hover:text-gray-300">
+                Preferences
+              </Link>
+            </li>            
+            <li>
+              <Link href="/usersettings" className="hover:text-gray-300">
                 <Settings className="w-5 h-5 text-white" />
               </Link>
             </li>
