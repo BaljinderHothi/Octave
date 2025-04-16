@@ -3,58 +3,50 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IReview extends Document {
-  accurateDate: string;
-  address: string;
-  aggregateRating: string;
-  author: string;
-  businessUrl: string;
-  dateCreated: string;
-  images: string;
-  input: string;
-  isLocalGuide: boolean;
-  name: string;
-  originalText: string;
-  place_id: string;
-  ratingMaxvalue: string;
-  responseFromOwner?: {
-    date_of_response: string;
-    responded_at: string;
-    response_text: string;
-  };
-  reviewBody: string;
-  reviewCount: string;
-  reviewRating: string;
-  reviewSource: string;
-  reviewTags: string | null;
-  reviewUrl: string;
+  user: mongoose.Types.ObjectId;
+  businessId: string;
+  businessName: string;
+  rating: number;
+  text: string;
+  images?: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  isPublic: boolean;
 }
 
 const ReviewSchema = new Schema(
   {
-    accurateDate: { type: String },
-    address: { type: String },
-    aggregateRating: { type: String },
-    author: { type: String },
-    businessUrl: { type: String },
-    dateCreated: { type: String },
-    images: { type: String },
-    input: { type: String },
-    isLocalGuide: { type: Boolean },
-    name: { type: String },
-    originalText: { type: String },
-    place_id: { type: String },
-    ratingMaxvalue: { type: String },
-    responseFromOwner: {
-      date_of_response: { type: String },
-      responded_at: { type: String },
-      response_text: { type: String }
+    user: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'User',
+      required: true
     },
-    reviewBody: { type: String },
-    reviewCount: { type: String },
-    reviewRating: { type: String },
-    reviewSource: { type: String },
-    reviewTags: { type: String, default: null },
-    reviewUrl: { type: String }
+    businessId: { 
+      type: String, 
+      required: true 
+    },
+    businessName: { 
+      type: String, 
+      required: true 
+    },
+    rating: { 
+      type: Number, 
+      required: true,
+      min: 1,
+      max: 5
+    },
+    text: { 
+      type: String, 
+      required: true
+    },
+    images: { 
+      type: [String], 
+      default: [] 
+    },
+    isPublic: {
+      type: Boolean,
+      default: true
+    }
   },
   {
     timestamps: true,
@@ -62,10 +54,11 @@ const ReviewSchema = new Schema(
   }
 );
 
-ReviewSchema.index({ name: 1 });
-ReviewSchema.index({ place_id: 1 });
-ReviewSchema.index({ reviewRating: -1 });
-ReviewSchema.index({ dateCreated: -1 });
+ReviewSchema.index({ businessId: 1 });
+ReviewSchema.index({ user: 1 });
+ReviewSchema.index({ rating: -1 });
+ReviewSchema.index({ createdAt: -1 });
+ReviewSchema.index({ businessId: 1, user: 1 }, { unique: true }); 
 
 const Review = mongoose.models.Review || mongoose.model<IReview>('Review', ReviewSchema);
 

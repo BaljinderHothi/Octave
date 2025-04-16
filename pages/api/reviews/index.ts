@@ -1,58 +1,48 @@
 //API endpoint for fetching reviews in general
+//GET = fetch reviews
+//POST = create review  
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import dbConnect from '../../../lib/mongoose';
-import Review from '../../../models/Review';
+import { withAuth, AuthenticatedRequest } from '@/lib/auth';
+import dbConnect from '@/lib/mongoose';
+import Review from '@/models/Review';
 
-export default async function handler(
-  req: NextApiRequest,
+async function handler(
+  req: AuthenticatedRequest,
   res: NextApiResponse
 ) {
   await dbConnect();
 
-  //Fetch reviews
+  // fetch reviews
   if (req.method === 'GET') {
     try {
-      const {
-        place_id, 
-        name, 
-        author, 
-        rating, 
-        sort = 'dateCreated', 
-        order = 'desc', 
-        page = 1, 
-        limit = 10 
-      } = req.query;
-
+      const { businessId, userId, limit = 10, page = 1 } = req.query;
       const query: any = {};
 
-      if (place_id) {
-        query.place_id = place_id;
+      if (businessId) {
+        query.businessId = businessId;
       }
 
-      if (name) {
-        query.name = new RegExp(name as string, 'i'); 
+      if (userId) {
+        query.user = userId;
       }
 
-      if (author) {
-        query.author = new RegExp(author as string, 'i'); 
+      if (!businessId && !userId) {
+        query.isPublic = true;
+      } else if (userId && userId !== req.user._id.toString()) {
+        query.isPublic = true;
       }
-
-      if (rating) {
-        query.reviewRating = { $gte: rating };
-      }
-
-      const sortOrder = order === 'asc' ? 1 : -1;
-      const sortOptions: any = { [sort as string]: sortOrder };
 
       const pageNum = parseInt(page as string) || 1;
       const limitNum = parseInt(limit as string) || 10;
       const skip = (pageNum - 1) * limitNum;
 
       const reviews = await Review.find(query)
-        .sort(sortOptions)
+        .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limitNum);
+        .limit(limitNum)
+        .populate('user', 'firstName lastName username profilePicture')
+        .lean();
 
       const total = await Review.countDocuments(query);
 
@@ -76,8 +66,59 @@ export default async function handler(
     }
   }
 
+  // create a new review
+  if (req.method === 'POST') {
+    try {
+      const { businessId, businessName, rating, text, images, isPublic } = req.body;
+
+      if (!businessId || !businessName || !rating || !text) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required fields'
+        });
+      }
+
+      const existingReview = await Review.findOne({
+        user: req.user._id,
+        businessId
+      });
+
+      if (existingReview) {
+        return res.status(400).json({
+          success: false,
+          message: 'You have already reviewed this business',
+          reviewId: existingReview._id
+        });
+      }
+
+      const review = await Review.create({
+        user: req.user._id,
+        businessId,
+        businessName,
+        rating: Number(rating),
+        text,
+        images: images || [],
+        isPublic: isPublic !== false
+      });
+
+      return res.status(201).json({
+        success: true,
+        data: review
+      });
+    } catch (error) {
+      console.error('Error creating review:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error creating review',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
   return res.status(405).json({
     success: false,
     message: 'Method not allowed'
   });
-} 
+}
+
+export default withAuth(handler); 
