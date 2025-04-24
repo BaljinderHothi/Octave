@@ -183,7 +183,7 @@ export default function Signup() {
             className={`w-full py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white ${
               loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
             }`}
-            style={{ backgroundColor: "#003049" }}
+            style={{ backgroundColor: "#000000" }}
           >
             {loading ? 'Creating Account...' : 'Continue'}
           </button>

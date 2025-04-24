@@ -165,7 +165,7 @@ export default function Closed() {
             <div className="text-center">
               <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
                 <span className="block">Welcome to</span>
-                <span className="block text-blue-600">Octave</span>
+                <span className="block text-pink-500">OCTAVE</span>
               </h1>
               <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
                 Discover personalized recommendations for activities, restaurants, and more in New York City.
@@ -174,17 +174,17 @@ export default function Closed() {
                 <div className="rounded-md shadow">
                   <button
                     onClick={() => router.push('/login')}
-                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10"
+                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-black hover:bg-gray-700 md:py-4 md:text-lg md:px-10"
                   >
-                    Sign In
+                    Login
                   </button>
                 </div>
                 <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
                   <button
                     onClick={() => router.push('/register')}
-                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
+                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-black bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
                   >
-                    Register
+                    Sign Up
                   </button>
                 </div>
               </div>
