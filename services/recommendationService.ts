@@ -6,7 +6,7 @@
 
 import { Recommendation, RecommendationResponse } from '../types/Recommendation';
 
-const RENDER_API_URL = 'https://octave-backend.onrender.com';
+const RENDER_API_URL = 'https://octavemodel.onrender.com';
 
 interface UserPreferences {
   food?: string[];
