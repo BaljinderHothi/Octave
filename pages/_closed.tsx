@@ -9,16 +9,21 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Recommendation } from '../types/Recommendation';
 import { getRecommendations } from '../services/recommendationService';
+import { searchRecommendations } from '../services/searchService';
 import RecommendationCard from '../components/RecommendationCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SearchBar from '../components/SearchBar';
 
 export default function Closed() {
   const router = useRouter();
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userPreferences, setUserPreferences] = useState<string[]>([]);
+  const [isSearchResults, setIsSearchResults] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     //debugging
@@ -149,6 +154,57 @@ export default function Closed() {
     verifyAuth();
   }, [router]);
 
+  //search functionality itself
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) return;
+    
+    try {
+      setSearching(true);
+      setSearchQuery(query);
+      setIsSearchResults(true);
+      
+      const searchResults = await searchRecommendations(query);
+      
+      if (searchResults.length === 0) {
+        setError('No results found for your search.');
+        setRecommendations([]);
+      } else {
+        setError(null);
+        setRecommendations(searchResults);
+      }
+    } catch (err) {
+      console.error('Search error:', err);
+      setError('Failed to search. Please try again later.');
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  //clear the results and return to recommendations
+  const clearSearch = () => {
+    setIsSearchResults(false);
+    setSearchQuery('');
+    
+    // Reload original recommendations
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      setLoading(true);
+      getRecommendations(userId, {
+        food: userPreferences.filter(p => p.startsWith('food:')),
+        activities: userPreferences.filter(p => p.startsWith('activity:')),
+        places: userPreferences.filter(p => p.startsWith('place:')),
+        custom: userPreferences.filter(p => !p.includes(':'))
+      }).then(recs => {
+        setRecommendations(recs);
+        setLoading(false);
+      }).catch(err => {
+        console.error('Error reloading recommendations:', err);
+        setError('Failed to reload recommendations.');
+        setLoading(false);
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex justify-center items-center">
@@ -225,30 +281,74 @@ export default function Closed() {
   }, {});
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-100 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Your Recommendations</h1>
+        <div className="mb-8 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+          <h1 className="text-3xl font-bold">{isSearchResults ? 'Search Results' : 'Your Recommendations'}</h1>
+          <div className="w-full md:w-auto">
+            <SearchBar onSearch={handleSearch} />
+          </div>
+        </div>
+        
+        {searching && (
+          <div className="flex justify-center my-8">
+            <LoadingSpinner />
+          </div>
+        )}
+        
+        {isSearchResults && !searching && (
+          <div className="mb-6 flex items-center">
+            <span className="text-gray-600">Results for: <span className="font-medium">{searchQuery}</span></span>
+            <button 
+              onClick={clearSearch}
+              className="ml-4 text-blue-600 hover:text-blue-800 text-sm underline"
+            >
+              Back to recommendations
+            </button>
+          </div>
+        )}
         
         {error ? (
-          <div className="text-red-600 text-center">{error}</div>
+          <div className="text-red-600 text-center p-4 bg-white rounded-lg shadow">
+            <p>{error}</p>
+            {isSearchResults && (
+              <button 
+                onClick={clearSearch}
+                className="mt-4 text-blue-600 hover:text-blue-800 text-sm underline"
+              >
+                Back to recommendations
+              </button>
+            )}
+          </div>
         ) : Object.keys(groupedRecommendations).length === 0 ? (
-          <div className="text-center">
+          <div className="text-center p-8 bg-white rounded-lg shadow">
             <p className="text-gray-600 mb-4">
-              No recommendations found. Try updating your preferences.
+              {isSearchResults ? 'No results found for your search.' : 'No recommendations found. Try updating your preferences.'}
             </p>
-            <button
-              onClick={() => router.push('/userpreference')}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              Update Preferences
-            </button>
+            {isSearchResults ? (
+              <button
+                onClick={clearSearch}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Back to recommendations
+              </button>
+            ) : (
+              <button
+                onClick={() => router.push('/userpreference')}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Update Preferences
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-12">
             {Object.entries(groupedRecommendations).map(([category, recs]) => (
               <div key={category} className="space-y-6">
                 <h2 className="text-2xl font-semibold text-gray-800">
-                  Because you liked {category}...
+                  {isSearchResults 
+                    ? `${category} Recommendations` 
+                    : `Because you liked ${category}...`}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {recs.map((rec) => (
