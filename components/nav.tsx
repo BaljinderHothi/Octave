@@ -70,9 +70,9 @@ export default function Nav() {
       </div>
       <ul className="flex gap-8 items-center text-white text-sm">
         <li><Link href="/" className="hover:text-gray-300">Home</Link></li>
-        <li><Link href="/itinerary" className="hover:text-gray-300">Itinerary</Link></li>
         {isLoggedIn ? (
           <>
+            <li><Link href="/itinerary" className="hover:text-gray-300">itinerary</Link></li> 
             <li>
               <Link href="/userpreference" className="hover:text-gray-300">
                 Preferences
