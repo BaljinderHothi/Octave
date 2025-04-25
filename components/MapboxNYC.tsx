@@ -1,30 +1,167 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
+import { MapPin } from 'lucide-react';
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
-export default function MapboxNYC({ onSelectLocation }: { onSelectLocation: (lngLat: { lng: number, lat: number }) => void }) {
+interface Location {
+  lng: number;
+  lat: number;
+}
+
+interface MapboxNYCProps {
+  onSelectLocation: (location: Location, radius: number) => void;
+}
+
+export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const marker = useRef<mapboxgl.Marker | null>(null);
+  const radiusCircle = useRef<mapboxgl.GeoJSONSource | null>(null);
+  const [radius, setRadius] = useState<number>(5); // Default radius in miles
+
+  //convert miles to meters for mapbox
+  const milesToMeters = (miles: number) => miles * 1609.34;
 
   useEffect(() => {
-    const map = new mapboxgl.Map({
-      container: mapContainer.current!,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-73.935242, 40.73061], // NYC
-      zoom: 10
-    });
+    if (mapContainer.current && !map.current) {
 
-    map.on('click', (e) => {
-      onSelectLocation(e.lngLat);
-    });
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [-73.935242, 40.73061], // new york city
+        zoom: 11
+      });
 
-    return () => map.remove();
-  }, [onSelectLocation]);
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+      marker.current = new mapboxgl.Marker({
+        draggable: true,
+        color: '#ff6b6b'
+      })
+        .setLngLat([-73.935242, 40.73061])
+        .addTo(map.current);
+
+      map.current.on('load', () => {
+        if (!map.current) return;
+
+
+        map.current.addSource('radius-circle', {
+          type: 'geojson',
+          data: createGeoJSONCircle([-73.935242, 40.73061], milesToMeters(radius))
+        });
+
+        map.current.addLayer({
+          id: 'radius-circle',
+          type: 'fill',
+          source: 'radius-circle',
+          paint: {
+            'fill-color': '#6366f1',
+            'fill-opacity': 0.2,
+            'fill-outline-color': '#4f46e5'
+          }
+        });
+
+        radiusCircle.current = map.current.getSource('radius-circle') as mapboxgl.GeoJSONSource;
+      });
+
+      marker.current.on('dragend', updateLocation);
+
+
+      map.current.on('click', (e) => {
+        if (marker.current) {
+          marker.current.setLngLat(e.lngLat);
+          updateLocation();
+        }
+      });
+    }
+
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, []);
+
+
+  useEffect(() => {
+    if (marker.current && radiusCircle.current) {
+      const lngLat = marker.current.getLngLat();
+      radiusCircle.current.setData(createGeoJSONCircle([lngLat.lng, lngLat.lat], milesToMeters(radius)));
+    }
+  }, [radius]);
+
+ 
+  const createGeoJSONCircle = (center: [number, number], radiusInMeters: number) => {
+    const points = 64;
+    const coords = {
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [[]]
+      },
+      properties: {}
+    };
+
+    const degreePerPoint = 360 / points;
+    const kmPerLngDegree = 111.32 * Math.cos(center[1] * Math.PI / 180);
+    const kmPerLatDegree = 110.574;
+
+    for (let i = 0; i < points; i++) {
+      const degree = i * degreePerPoint;
+      const radian = degree * (Math.PI / 180);
+      const latOffset = Math.sin(radian) * (radiusInMeters / 1000) / kmPerLatDegree;
+      const lngOffset = Math.cos(radian) * (radiusInMeters / 1000) / kmPerLngDegree;
+
+      const lat = center[1] + latOffset;
+      const lng = center[0] + lngOffset;
+      
+      (coords.geometry.coordinates[0] as any).push([lng, lat]);
+    }
+    
+  
+    (coords.geometry.coordinates[0] as any).push((coords.geometry.coordinates[0] as any)[0]);
+
+    return coords;
+  };
+
+ 
+  const updateLocation = () => {
+    if (marker.current && radiusCircle.current) {
+      const lngLat = marker.current.getLngLat();
+      radiusCircle.current.setData(createGeoJSONCircle([lngLat.lng, lngLat.lat], milesToMeters(radius)));
+      onSelectLocation({ lng: lngLat.lng, lat: lngLat.lat }, radius);
+    }
+  };
 
   return (
-    <div
-      ref={mapContainer}
-      className="rounded-2xl w-[50vw] h-[80vh] border border-gray-300 shadow"
-    />
+    <div className="h-full flex flex-col">
+      <div className="flex items-center justify-between mb-4 px-2">
+        <div className="flex items-center">
+          <MapPin size={20} className="text-blue-600 mr-2" />
+          <span className="font-semibold">Drag pin or click map to set location</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <label htmlFor="radius" className="text-sm font-medium">
+            Radius (miles):
+          </label>
+          <input
+            id="radius"
+            type="range"
+            min="1"
+            max="15"
+            value={radius}
+            onChange={(e) => setRadius(parseInt(e.target.value))}
+            className="w-24"
+          />
+          <span className="text-sm font-bold">{radius}</span>
+        </div>
+      </div>
+      <div
+        ref={mapContainer}
+        className="rounded-xl flex-grow border border-gray-300 shadow"
+      />
+    </div>
   );
 }

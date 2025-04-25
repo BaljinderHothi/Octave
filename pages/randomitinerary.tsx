@@ -1,10 +1,13 @@
 // This page generates a fully randomized itinerary for the user, it is not based on their preferences.
 // Users are able to regenerate the itinerary, or only one single option at a time.
+// This page generates a fully randomized itinerary for the user, it is not based on their preferences.
+// Users are able to regenerate the itinerary, or only one single option at a time.
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { saveToLocalStorage, getFromLocalStorage } from '@/utils/storage';
 import MapboxNYC from 'components/MapboxNYC';
+import { MapPin, Calendar, Clock, Phone, Star, Grid, RefreshCw } from 'lucide-react';
 
 export default function RandomItinerary() {
   const router = useRouter();
@@ -12,8 +15,10 @@ export default function RandomItinerary() {
   const [food, setFood] = useState<any>(null);
   const [activity, setActivity] = useState<any>(null);
   const [place, setPlace] = useState<any>(null);
-  const [selectedCategories, setSelectedCategories] = useState({food: true, activity: true,place: true});
+  const [selectedCategories, setSelectedCategories] = useState({food: true, activity: true, place: true});
   const [selectedLocation, setSelectedLocation] = useState<{lng: number, lat: number} | null>(null);
+  const [filterRadius, setFilterRadius] = useState<number>(5);
+  const [filteredBusinesses, setFilteredBusinesses] = useState<any[]>([]);
 
   const foodAliases = ['restaurants', 'italian', 'mexican', 'sushi', 'bbq', 'vegan', 'fast food', 'pizza', 'indian', 'latin fusion', 'taco',
     'thai', 'chinese', 'mediterranean', 'greek', 'french', 'japanese', 'korean', 'vietnamese', 'lebanese', 'cuban', 
@@ -45,6 +50,20 @@ export default function RandomItinerary() {
     return `${hr}:${minutes} ${ampm}`;
   };
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 3958.8; // Earth's radius in miles
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c;
+    return distance;
+  };
+  
   const renderHours = (business: any) => {
     const openHours = business.hours?.[0]?.open || [];
     const groupedByDay: { [key: number]: { start: string, end: string, is_overnight: boolean }[] } = {};
@@ -54,34 +73,38 @@ export default function RandomItinerary() {
     }
   
     return (
-      <div className="mt-0.5">
-        <div className="flex items-center gap-4 mt-2">
-        <button
-          onClick={() => setShowHours(prev => ({ ...prev, [business.id]: !prev[business.id] }))}
-          className="text-blue-600 hover:underline text-sm"
-        >
-          {showHours[business.id] ? 'Hide Hours' : 'Show Hours'}
-        </button>
-        <button
-        onClick={() => {
-          saveToLocalStorage('saved_food', food);
-          saveToLocalStorage('saved_activity', activity);
-          saveToLocalStorage('saved_place', place);
-          router.push(`/business/${business.id}`);
-        }}
-        className="text-blue-600 hover:underline text-sm"
-        >
-        Reviews
-        </button>
-      </div>
+      <div className="mt-2">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setShowHours(prev => ({ ...prev, [business.id]: !prev[business.id] }))}
+            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center"
+          >
+            <Clock size={16} className="mr-1" />
+            {showHours[business.id] ? 'Hide Hours' : 'Show Hours'}
+          </button>
+          <button
+            onClick={() => {
+              saveToLocalStorage('saved_food', food);
+              saveToLocalStorage('saved_activity', activity);
+              saveToLocalStorage('saved_place', place);
+              router.push(`/business/${business.id}`);
+            }}
+            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center"
+          >
+            <Star size={16} className="mr-1" />
+            Reviews
+          </button>
+        </div>
 
         {showHours[business.id] && (
-          <ul className="mt-1 ml-1 text-sm text-gray-700">
+          <ul className="mt-2 ml-1 text-sm text-gray-700 grid grid-cols-1 gap-1">
             {Object.entries(groupedByDay).map(([day, entries]: [string, any[]]) => (
-              <li key={day}>
-                {daysOfWeek[parseInt(day)]}:{" "}
-                {entries.map((e, idx) => `${formatTime(e.start)} – ${formatTime(e.end)}${e.is_overnight ? ' (Overnight)' : ''}`)
-                  .join(', ')}
+              <li key={day} className="flex">
+                <span className="font-medium w-24">{daysOfWeek[parseInt(day)]}:</span>
+                <span>
+                  {entries.map((e, idx) => `${formatTime(e.start)} – ${formatTime(e.end)}${e.is_overnight ? ' (Overnight)' : ''}`)
+                    .join(', ')}
+                </span>
               </li>
             ))}
           </ul>
@@ -93,10 +116,18 @@ export default function RandomItinerary() {
 
   const renderStars = (rating: number) => {
     return (
-      <span className="flex items-center gap-1 text-yellow-500 font-bold">
-        {rating.toFixed(1)}
-        <span className="text-yellow-500">★</span>
-      </span>
+      <div className="flex items-center">
+        <span className="text-yellow-500 font-bold mr-1">{rating.toFixed(1)}</span>
+        <div className="flex">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star
+              key={star}
+              size={16}
+              className={`${rating >= star ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
+            />
+          ))}
+        </div>
+      </div>
     );
   };
 
@@ -104,14 +135,18 @@ export default function RandomItinerary() {
     if (!Array.isArray(categories) || categories.length === 0) return null;
 
     return (
-      <div className="mt-1 text-sm text-gray-700">
-        <strong>Categories:</strong>{' '}
-        {categories.map((cat, idx) => (
-          <span key={idx}>
-            {cat.title}
-            {idx < categories.length - 1 ? ', ' : ''}
-          </span>
-        ))}
+      <div className="mt-2 text-sm text-gray-700">
+        <div className="flex items-center gap-1">
+          <Grid size={16} className="text-gray-500" />
+          <span className="font-semibold">Categories:</span>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-1">
+          {categories.map((cat, idx) => (
+            <span key={idx} className="px-2 py-1 bg-gray-100 rounded-full text-xs">
+              {cat.title}
+            </span>
+          ))}
+        </div>
       </div>
     );
   };
@@ -122,6 +157,7 @@ export default function RandomItinerary() {
       .then(data => {
         if (Array.isArray(data?.data) && data.data.length >= 3) {
           setBusinesses(data.data);
+          setFilteredBusinesses(data.data);
         } else {
           console.warn('No data or not enough entries');
         }
@@ -142,152 +178,223 @@ export default function RandomItinerary() {
         generateRandom();
       }
     }
-  }, [businesses]);
+  }, [filteredBusinesses]);
   
-  const handleSelectLocation = (lngLat: { lng: number, lat: number }) => {
+  const handleSelectLocation = (lngLat: { lng: number, lat: number }, radius: number) => {
     setSelectedLocation(lngLat);
-    console.log("Selected location:", lngLat);
-    // Here you could filter businesses by proximity to the selected location
-    // or otherwise use the coordinates in your application logic
+    setFilterRadius(radius);
+    
+    if (businesses.length > 0) {
+      const filtered = businesses.filter(business => {
+        if (!business.coordinates?.latitude || !business.coordinates?.longitude) return false;
+        
+        const distance = calculateDistance(
+          business.coordinates.latitude,
+          business.coordinates.longitude,
+          lngLat.lat,
+          lngLat.lng
+        );
+        
+        return distance <= radius;
+      });
+      
+      setFilteredBusinesses(filtered.length > 0 ? filtered : businesses);
+      generateRandomWithFiltered(filtered.length > 0 ? filtered : businesses);
+    }
   };
 
   const isStrictlyInCategory = (business: any, include: string[], excludeGroups: string[][]) => {
-    if (!Array.isArray(business.categories)) return false
-    const aliases: string[] = business.categories.map((c: any) => c.alias.toLowerCase())
+    if (!Array.isArray(business.categories)) return false;
+    const aliases: string[] = business.categories.map((c: any) => c.alias.toLowerCase());
     return (
       aliases.some((alias: string) => include.includes(alias)) &&
       !excludeGroups.some(group => group.some(ex => aliases.includes(ex)))
-    )
-  }
+    );
+  };
 
-  const pickStrict = (include: string[], ...excludeGroups: string[][]) => {
+  const pickStrict = (businesses: any[], include: string[], ...excludeGroups: string[][]) => {
     const filtered = businesses.filter(b =>
       isStrictlyInCategory(b, include, excludeGroups)
-    )
-    return filtered[Math.floor(Math.random() * filtered.length)] || null
-  }
+    );
+    return filtered[Math.floor(Math.random() * filtered.length)] || null;
+  };
 
-  const generateRandom = () => {
+  const generateRandomWithFiltered = (businessList: any[]) => {
     localStorage.removeItem('saved_food');
     localStorage.removeItem('saved_activity');
     localStorage.removeItem('saved_place');
   
-    if (selectedCategories.food) setFood(pickStrict(foodAliases, activityAliases, placeAliases));
-    if (selectedCategories.activity) setActivity(pickStrict(activityAliases, foodAliases, placeAliases));
-    if (selectedCategories.place) setPlace(pickStrict(placeAliases, foodAliases, activityAliases));
-  }
-  const ItineraryCard = ({ label, item, onGenerate }: any) => (
-    <div className="bg-gray-100 shadow-lg rounded-xl p-2 my-2 w-full max-w-6xl border border-gray-200">
-      <div className="flex justify-between items-center mb-1">
-        <h2 className="text-2xl font-extrabold">{label}</h2>
-        <button onClick={onGenerate} className="text-md text-blue-700 hover:underline">
-          Generate different suggestion
+    if (selectedCategories.food) {
+      setFood(pickStrict(businessList, foodAliases, activityAliases, placeAliases));
+    }
+    if (selectedCategories.activity) {
+      setActivity(pickStrict(businessList, activityAliases, foodAliases, placeAliases));
+    }
+    if (selectedCategories.place) {
+      setPlace(pickStrict(businessList, placeAliases, foodAliases, activityAliases));
+    }
+  };
+
+  const generateRandom = () => {
+    generateRandomWithFiltered(filteredBusinesses);
+  };
+
+  const ItineraryCard = ({ label, item, onGenerate, icon }: any) => (
+    <div className="bg-white shadow-lg rounded-xl p-4 my-3 w-full border border-gray-200 hover:shadow-xl transition-shadow">
+      <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-100">
+        <div className="flex items-center">
+          {icon}
+          <h2 className="text-xl font-bold ml-2">{label}</h2>
+        </div>
+        <button 
+          onClick={onGenerate} 
+          className="flex items-center text-indigo-600 hover:text-indigo-800 font-medium text-sm"
+        >
+          <RefreshCw size={16} className="mr-1" />
+          Generate new suggestion
         </button>
       </div>
+      
       {!item ? (
-        <p>Loading...</p>
+        <div className="flex justify-center items-center h-28">
+          <p className="text-gray-500">Loading suggestions...</p>
+        </div>
       ) : (
-        <div className="flex gap-5">
-          {item.image_url && (
+        <div className="flex gap-4">
+          {item.image_url ? (
             <img
               src={item.image_url}
               alt={item.name}
-              className="w-28 h-28 object-cover rounded"
+              className="w-32 h-32 object-cover rounded-lg"
             />
+          ) : (
+            <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center">
+              <span className="text-gray-400">No Image</span>
+            </div>
           )}
-          <div>
-            <p className="font-semibold">{item.name || 'Unnamed'}</p>
-            <p>{formatPhone(item.phone)}</p>
+          
+          <div className="flex-1">
+            <h3 className="font-bold text-lg">{item.name || 'Unnamed'}</h3>
+            
+            <div className="flex items-center mt-1 text-sm text-gray-600">
+              <Phone size={14} className="mr-1" />
+              <span>{formatPhone(item.phone)}</span>
+            </div>
+            
             {item.address && (
-              <div>
-                {item.address.map((line: string, idx: number) => (
-                  <p key={idx}>{line}</p>
-                ))}
+              <div className="mt-1 text-sm text-gray-600 flex">
+                <MapPin size={14} className="mr-1 mt-1 flex-shrink-0" />
+                <div>
+                  {item.address.map((line: string, idx: number) => (
+                    <p key={idx}>{line}</p>
+                  ))}
+                </div>
               </div>
             )}
+            
             {item.rating && (
-              <div className="mt-1 text-sm text-gray-800 flex items-center gap-2">
+              <div className="mt-2 text-sm flex items-center gap-2">
                 {renderStars(item.rating)}
                 {item.review_count && (
                   <span className="text-gray-500">• {item.review_count} reviews</span>
                 )}
               </div>
             )}
+            
             {renderCategories(item.categories)}
             {renderHours(item)}
           </div>
         </div>
       )}
     </div>
-  );  
+  );
 
   return (
-    <div className="flex min-h-screen px-2 py-2">
-      <div className="w-1/2 pt-20">
+    <div className="flex h-screen overflow-hidden">
+      {/* Map Section */}
+      <div className="w-1/2 h-full pt-16 pl-4 pr-2 pb-4">
         <MapboxNYC onSelectLocation={handleSelectLocation} />
-        {selectedLocation && (
-          <div className="mt-4 text-center">
-            <p>Selected coordinates: {selectedLocation.lng.toFixed(5)}, {selectedLocation.lat.toFixed(5)}</p>
-          </div>
-        )}
       </div>
-      <div className="w-1/2 flex flex-col items-center pt-20">
+      
+      {/* Itinerary Section */}
+      <div className="w-1/2 h-full pt-16 pr-4 pl-2 pb-4 overflow-y-auto">
         <button
           onClick={() => router.back()}
-          className="absolute top-20 left-10 text-2xl font-bold text-black hover:text-gray-500"
+          className="absolute top-20 left-10 text-xl font-bold text-black hover:text-gray-500 flex items-center"
         >
           ← Back
         </button>
 
-        <h1 className="text-3xl font-bold mb-100">Randomly Generated Itinerary:</h1>
-
-        <div className="flex gap-4 mb-6 mt-6">
-          {['food', 'activity', 'place'].map((cat) => (
-            <label key={cat} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="w-5 h-5"
-                checked={selectedCategories[cat as keyof typeof selectedCategories]}
-                onChange={(e) =>
-                  setSelectedCategories(prev => ({
-                    ...prev,
-                    [cat]: e.target.checked,
-                  }))
-                }
-              />
-              {cat.charAt(0).toUpperCase() + cat.slice(1)}
-            </label>
-          ))}
+        <div className="flex flex-col items-start mb-6">
+          <h1 className="text-2xl font-bold">Random Itinerary</h1>
+          
+          {selectedLocation && (
+            <div className="mt-2 text-sm text-gray-600 flex items-center">
+              <MapPin size={16} className="mr-1 text-indigo-600" />
+              <span>
+                Filtering within {filterRadius} mile{filterRadius !== 1 ? 's' : ''} of selected location
+              </span>
+            </div>
+          )}
+          
+          <div className="flex gap-4 mt-4">
+            {['food', 'activity', 'place'].map((cat) => (
+              <label key={cat} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 accent-indigo-600"
+                  checked={selectedCategories[cat as keyof typeof selectedCategories]}
+                  onChange={(e) =>
+                    setSelectedCategories(prev => ({
+                      ...prev,
+                      [cat]: e.target.checked,
+                    }))
+                  }
+                />
+                <span>{cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
+              </label>
+            ))}
+          </div>
         </div>
 
-        {selectedCategories.food && (
-          <ItineraryCard
-            label="Food"
-            item={food}
-            onGenerate={() => setFood(pickStrict(foodAliases, activityAliases, placeAliases))}
-          />
-        )}
-        {selectedCategories.activity && (
-          <ItineraryCard
-            label="Activity"
-            item={activity}
-            onGenerate={() => setActivity(pickStrict(activityAliases, foodAliases, placeAliases))}
-          />
-        )}
-        {selectedCategories.place && (
-          <ItineraryCard
-            label="Place"
-            item={place}
-            onGenerate={() => setPlace(pickStrict(placeAliases, foodAliases, activityAliases))}
-          />
-        )}
+        <div className="space-y-1">
+          {selectedCategories.food && (
+            <ItineraryCard
+              label="Restaurant"
+              item={food}
+              icon={<div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center"><img src="/food-icon.svg" alt="Food" className="w-5 h-5" onError={(e: any) => {e.target.onerror = null; e.target.src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ef4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 8h1a4 4 0 0 1 0 8h-1'/%3E%3Cpath d='M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z'/%3E%3Cline x1='6' y1='1' x2='6' y2='4'/%3E%3Cline x1='10' y1='1' x2='10' y2='4'/%3E%3Cline x1='14' y1='1' x2='14' y2='4'/%3E%3C/svg%3E"}} /></div>}
+              onGenerate={() => setFood(pickStrict(filteredBusinesses, foodAliases, activityAliases, placeAliases))}
+            />
+          )}
+          
+          {selectedCategories.activity && (
+            <ItineraryCard
+              label="Activity"
+              item={activity}
+              icon={<div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center"><img src="/activity-icon.svg" alt="Activity" className="w-5 h-5" onError={(e: any) => {e.target.onerror = null; e.target.src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230ea5e9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 6v6l4 2'/%3E%3C/svg%3E"}} /></div>}
+              onGenerate={() => setActivity(pickStrict(filteredBusinesses, activityAliases, foodAliases, placeAliases))}
+            />
+          )}
+          
+          {selectedCategories.place && (
+            <ItineraryCard
+              label="Place"
+              item={place}
+              icon={<div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center"><img src="/place-icon.svg" alt="Place" className="w-5 h-5" onError={(e: any) => {e.target.onerror = null; e.target.src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3C/svg%3E"}} /></div>}
+              onGenerate={() => setPlace(pickStrict(filteredBusinesses, placeAliases, foodAliases, activityAliases))}
+            />
+          )}
+        </div>
 
-        <button
-          onClick={() => generateRandom()}
-          className="bg-black text-white px-6 py-3 rounded mt-6"
-        >
-          Regenerate Full Itinerary
-        </button>
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={generateRandom}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium flex items-center transition-colors"
+          >
+            <RefreshCw size={18} className="mr-2" />
+            Regenerate Full Itinerary
+          </button>
+        </div>
       </div>
     </div>
   );
