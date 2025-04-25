@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { saveToLocalStorage, getFromLocalStorage } from '@/utils/storage';
+import MapboxNYC from 'components/MapboxNYC';
 
 export default function GeneratedItinerary() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function GeneratedItinerary() {
   const [activity, setActivity] = useState<any>(null);
   const [place, setPlace] = useState<any>(null);
   const [selectedCategories, setSelectedCategories] = useState({food: true, activity: true,place: true});
+  const [selectedLocation, setSelectedLocation] = useState<{lng: number, lat: number} | null>(null);
 
   const [userPrefs, setUserPrefs] = useState({food: [] as string[], activities: [] as string[], places: [] as string[]})
   
@@ -209,6 +211,13 @@ export default function GeneratedItinerary() {
     if (selectedCategories.place) {setPlace(pickStrict(placeAliases, userPrefs.places, foodAliases, activityAliases));}
   };
 
+  const handleSelectLocation = (lngLat: { lng: number, lat: number }) => {
+    setSelectedLocation(lngLat);
+    console.log("Selected location:", lngLat);
+    // Here you could filter businesses by proximity to the selected location
+    // or otherwise use the coordinates in your application logic
+  };
+
   const ItineraryCard = ({ label, item, onGenerate }: any) => (
     <div className="bg-gray-100 shadow-lg rounded-xl p-2 my-2 w-full max-w-6xl border border-gray-200">
       <div className="flex justify-between items-center mb-1">
@@ -255,63 +264,73 @@ export default function GeneratedItinerary() {
   );  
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-2 py-2">
-      <button
-        onClick={() => router.back()}
-        className="absolute top-20 left-10 text-2xl font-bold text-black hover:text-gray-500"
-      >
-        ← Back
-      </button>
-
-      <h1 className="text-3xl font-bold mb-100">Personalized Generated Itinerary:</h1>
-
-      <div className="flex gap-4 mb-6 mt-6">
-        {['food', 'activity', 'place'].map((cat) => (
-          <label key={cat} className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              className="w-5 h-5"
-              checked={selectedCategories[cat as keyof typeof selectedCategories]}
-              onChange={(e) =>
-                setSelectedCategories(prev => ({
-                  ...prev,
-                  [cat]: e.target.checked,
-                }))
-              }
-            />
-            {cat.charAt(0).toUpperCase() + cat.slice(1)}
-          </label>
-        ))}
-      </div>
-
-      {selectedCategories.food && (
-        <ItineraryCard
-          label="Food"
-          item={food}
-          onGenerate={() => setFood(pickStrict(foodAliases, userPrefs.food, activityAliases, placeAliases))}
-        />
-      )}
-      {selectedCategories.activity && (
-        <ItineraryCard
-          label="Activity"
-          item={activity}
-          onGenerate={() => setActivity(pickStrict(activityAliases, userPrefs.activities, foodAliases, placeAliases))}
-        />
-      )}
-      {selectedCategories.place && (
-        <ItineraryCard
-          label="Place"
-          item={place}
-          onGenerate={() => setPlace(pickStrict(placeAliases, userPrefs.places, foodAliases, activityAliases))}
-        />
-      )}
-
-      <button
-              onClick={() => generateRandom()}
-              className="bg-black text-white px-6 py-3 rounded mt-6"
-            >
-              Regenerate Full Itinerary
-            </button>
+    <div className="flex min-h-screen px-2 py-2">
+      <div className="w-1/2 pt-20">
+        <MapboxNYC onSelectLocation={handleSelectLocation} />
+        {selectedLocation && (
+          <div className="mt-4 text-center">
+            <p>Selected coordinates: {selectedLocation.lng.toFixed(5)}, {selectedLocation.lat.toFixed(5)}</p>
           </div>
-        );
-      }
+        )}
+      </div>
+      <div className="w-1/2 flex flex-col items-center pt-20">
+        <button
+          onClick={() => router.back()}
+          className="absolute top-20 left-10 text-2xl font-bold text-black hover:text-gray-500"
+        >
+          ← Back
+        </button>
+
+        <h1 className="text-3xl font-bold mb-100">Personalized Generated Itinerary:</h1>
+
+        <div className="flex gap-4 mb-6 mt-6">
+          {['food', 'activity', 'place'].map((cat) => (
+            <label key={cat} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                className="w-5 h-5"
+                checked={selectedCategories[cat as keyof typeof selectedCategories]}
+                onChange={(e) =>
+                  setSelectedCategories(prev => ({
+                    ...prev,
+                    [cat]: e.target.checked,
+                  }))
+                }
+              />
+              {cat.charAt(0).toUpperCase() + cat.slice(1)}
+            </label>
+          ))}
+        </div>
+
+        {selectedCategories.food && (
+          <ItineraryCard
+            label="Food"
+            item={food}
+            onGenerate={() => setFood(pickStrict(foodAliases, userPrefs.food, activityAliases, placeAliases))}
+          />
+        )}
+        {selectedCategories.activity && (
+          <ItineraryCard
+            label="Activity"
+            item={activity}
+            onGenerate={() => setActivity(pickStrict(activityAliases, userPrefs.activities, foodAliases, placeAliases))}
+          />
+        )}
+        {selectedCategories.place && (
+          <ItineraryCard
+            label="Place"
+            item={place}
+            onGenerate={() => setPlace(pickStrict(placeAliases, userPrefs.places, foodAliases, activityAliases))}
+          />
+        )}
+
+        <button
+          onClick={() => generateRandom()}
+          className="bg-black text-white px-6 py-3 rounded mt-6"
+        >
+          Regenerate Full Itinerary
+        </button>
+      </div>
+    </div>
+  );
+}
