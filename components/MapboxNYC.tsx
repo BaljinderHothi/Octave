@@ -155,7 +155,7 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
       </div>
       <div
         ref={mapContainer}
-        className="rounded-xl flex-grow border border-gray-300 shadow"
+        className = "rounded-xl h-[400px] border border-gray-300 shadow"
       />
     </div>
   );

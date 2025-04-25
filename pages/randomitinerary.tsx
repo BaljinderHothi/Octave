@@ -202,6 +202,12 @@ export default function RandomItinerary() {
       generateRandomWithFiltered(filtered.length > 0 ? filtered : businesses);
     }
   };
+  useEffect(() => {
+    if (selectedLocation) {
+      handleSelectLocation(selectedLocation, filterRadius);
+    }
+  }, [filterRadius]);
+  
 
   const isStrictlyInCategory = (business: any, include: string[], excludeGroups: string[][]) => {
     if (!Array.isArray(business.categories)) return false;

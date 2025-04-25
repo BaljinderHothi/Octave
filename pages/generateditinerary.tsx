@@ -239,6 +239,12 @@ export default function GeneratedItinerary() {
       generateRandomWithFiltered(filtered.length > 0 ? filtered : businesses);
     }
   };
+  useEffect(() => {
+    if (selectedLocation) {
+      handleSelectLocation(selectedLocation, filterRadius);
+    }
+  }, [filterRadius]);
+  
 
  
   const isStrictlyInCategory = (
