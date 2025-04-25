@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { MapPin } from 'lucide-react';
+import type { Feature, Polygon } from 'geojson';
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
@@ -18,18 +19,17 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
   const radiusCircle = useRef<mapboxgl.GeoJSONSource | null>(null);
-  const [radius, setRadius] = useState<number>(5); // Default radius in miles
+  const [radius, setRadius] = useState<number>(5); //default mile radius
 
   //convert miles to meters for mapbox
   const milesToMeters = (miles: number) => miles * 1609.34;
 
   useEffect(() => {
     if (mapContainer.current && !map.current) {
-
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [-73.935242, 40.73061], // new york city
+        center: [-73.935242, 40.73061], // New York City
         zoom: 11
       });
 
@@ -44,7 +44,6 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
 
       map.current.on('load', () => {
         if (!map.current) return;
-
 
         map.current.addSource('radius-circle', {
           type: 'geojson',
@@ -67,7 +66,6 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
 
       marker.current.on('dragend', updateLocation);
 
-
       map.current.on('click', (e) => {
         if (marker.current) {
           marker.current.setLngLat(e.lngLat);
@@ -84,7 +82,6 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
     };
   }, []);
 
-
   useEffect(() => {
     if (marker.current && radiusCircle.current) {
       const lngLat = marker.current.getLngLat();
@@ -92,17 +89,9 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
     }
   }, [radius]);
 
- 
-  const createGeoJSONCircle = (center: [number, number], radiusInMeters: number) => {
+  const createGeoJSONCircle = (center: [number, number], radiusInMeters: number): Feature<Polygon> => {
     const points = 64;
-    const coords = {
-      type: 'Feature',
-      geometry: {
-        type: 'Polygon',
-        coordinates: [[]]
-      },
-      properties: {}
-    };
+    const coordinates: [number, number][] = [];
 
     const degreePerPoint = 360 / points;
     const kmPerLngDegree = 111.32 * Math.cos(center[1] * Math.PI / 180);
@@ -116,17 +105,23 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
 
       const lat = center[1] + latOffset;
       const lng = center[0] + lngOffset;
-      
-      (coords.geometry.coordinates[0] as any).push([lng, lat]);
-    }
-    
-  
-    (coords.geometry.coordinates[0] as any).push((coords.geometry.coordinates[0] as any)[0]);
 
-    return coords;
+      coordinates.push([lng, lat]);
+    }
+
+  
+    coordinates.push(coordinates[0]);
+
+    return {
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [coordinates]
+      },
+      properties: {}
+    };
   };
 
- 
   const updateLocation = () => {
     if (marker.current && radiusCircle.current) {
       const lngLat = marker.current.getLngLat();
