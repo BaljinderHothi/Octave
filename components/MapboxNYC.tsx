@@ -19,7 +19,7 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
   const radiusCircle = useRef<mapboxgl.GeoJSONSource | null>(null);
-  const [radius, setRadius] = useState<number>(5); //default mile radius
+  const [radius, setRadius] = useState<number>(3); //default mile radius
 
   //convert miles to meters for mapbox
   const milesToMeters = (miles: number) => miles * 1609.34;
