@@ -35,7 +35,7 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
       const data = await response.json();
       
       if (data.features && data.features.length > 0) {
-        // Extract zip code from the first feature
+        
         const zipCode = data.features[0].text;
         setCurrentZipCode(zipCode);
         return zipCode;

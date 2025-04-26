@@ -399,7 +399,7 @@ export default function GeneratedItinerary() {
             <div className="mt-2 text-sm text-gray-600 flex items-center">
               <MapPin size={16} className="mr-1 text-indigo-600" />
               <span>
-                Filtering within {filterRadius} mile{filterRadius !== 1 ? 's' : ''} of selected location
+                Filtered to near the selected location
               </span>
             </div>
           )}
