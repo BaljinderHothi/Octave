@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { MapPin } from 'lucide-react';
 import type { Feature, Polygon } from 'geojson';
+import { saveToLocalStorage, getFromLocalStorage } from '@/utils/storage';
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
@@ -11,7 +12,7 @@ interface Location {
 }
 
 interface MapboxNYCProps {
-  onSelectLocation: (location: Location, radius: number) => void;
+  onSelectLocation: (location: Location, radius: number, zipCode: string) => void;
 }
 
 export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
@@ -19,17 +20,48 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
   const radiusCircle = useRef<mapboxgl.GeoJSONSource | null>(null);
-  const [radius, setRadius] = useState<number>(3); //default mile radius
+  const [radius, setRadius] = useState<number>(5); // default mile radius
+  const [currentZipCode, setCurrentZipCode] = useState<string>('');
 
-  //convert miles to meters for mapbox
+  // convert miles to meters for mapbox
   const milesToMeters = (miles: number) => miles * 1609.34;
+
+  //zip code from coordinates
+  const getZipCodeFromCoordinates = async (lng: number, lat: number) => {
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}&types=postcode`
+      );
+      const data = await response.json();
+      
+      if (data.features && data.features.length > 0) {
+        // Extract zip code from the first feature
+        const zipCode = data.features[0].text;
+        setCurrentZipCode(zipCode);
+        return zipCode;
+      }
+      return '';
+    } catch (error) {
+      console.error('Error fetching zip code:', error);
+      return '';
+    }
+  };
 
   useEffect(() => {
     if (mapContainer.current && !map.current) {
+      const savedLocation = getFromLocalStorage<Location>('mapLocation');
+      const savedRadius = getFromLocalStorage<number>('mapRadius');
+      
+      if (savedRadius) {
+        setRadius(savedRadius);
+      }
+
+      const initialLocation = savedLocation || { lng: -73.935242, lat: 40.73061 }; // Default to NYC
+
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [-73.935242, 40.73061], // New York City
+        center: [initialLocation.lng, initialLocation.lat],
         zoom: 11
       });
 
@@ -39,7 +71,7 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
         draggable: true,
         color: '#ff6b6b'
       })
-        .setLngLat([-73.935242, 40.73061])
+        .setLngLat([initialLocation.lng, initialLocation.lat])
         .addTo(map.current);
 
       map.current.on('load', () => {
@@ -47,7 +79,7 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
 
         map.current.addSource('radius-circle', {
           type: 'geojson',
-          data: createGeoJSONCircle([-73.935242, 40.73061], milesToMeters(radius))
+          data: createGeoJSONCircle([initialLocation.lng, initialLocation.lat], milesToMeters(radius))
         });
 
         map.current.addLayer({
@@ -62,6 +94,15 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
         });
 
         radiusCircle.current = map.current.getSource('radius-circle') as mapboxgl.GeoJSONSource;
+        
+        //If  saved location, get and set the zip code
+        if (savedLocation) {
+          getZipCodeFromCoordinates(savedLocation.lng, savedLocation.lat).then(zipCode => {
+            if (zipCode) {
+              onSelectLocation(savedLocation, radius, zipCode);
+            }
+          });
+        }
       });
 
       marker.current.on('dragend', updateLocation);
@@ -86,8 +127,14 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
     if (marker.current && radiusCircle.current) {
       const lngLat = marker.current.getLngLat();
       radiusCircle.current.setData(createGeoJSONCircle([lngLat.lng, lngLat.lat], milesToMeters(radius)));
+
+      saveToLocalStorage('mapRadius', radius);
+
+      if (currentZipCode) {
+        onSelectLocation({ lng: lngLat.lng, lat: lngLat.lat }, radius, currentZipCode);
+      }
     }
-  }, [radius]);
+  }, [radius, currentZipCode]);
 
   const createGeoJSONCircle = (center: [number, number], radiusInMeters: number): Feature<Polygon> => {
     const points = 64;
@@ -109,7 +156,6 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
       coordinates.push([lng, lat]);
     }
 
-  
     coordinates.push(coordinates[0]);
 
     return {
@@ -122,11 +168,17 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
     };
   };
 
-  const updateLocation = () => {
+  const updateLocation = async () => {
     if (marker.current && radiusCircle.current) {
       const lngLat = marker.current.getLngLat();
+
       radiusCircle.current.setData(createGeoJSONCircle([lngLat.lng, lngLat.lat], milesToMeters(radius)));
-      onSelectLocation({ lng: lngLat.lng, lat: lngLat.lat }, radius);
+      saveToLocalStorage('mapLocation', { lng: lngLat.lng, lat: lngLat.lat });
+
+      const zipCode = await getZipCodeFromCoordinates(lngLat.lng, lngLat.lat);
+      
+      // Update the component with new location info
+      onSelectLocation({ lng: lngLat.lng, lat: lngLat.lat }, radius, zipCode);
     }
   };
 
@@ -151,11 +203,16 @@ export default function MapboxNYC({ onSelectLocation }: MapboxNYCProps) {
             className="w-24"
           />
           <span className="text-sm font-bold">{radius}</span>
+          {currentZipCode && (
+            <span className="text-sm ml-4 bg-blue-100 text-blue-800 px-2 py-1 rounded">
+              Zip: {currentZipCode}
+            </span>
+          )}
         </div>
       </div>
       <div
         ref={mapContainer}
-        className = "rounded-xl h-[400px] border border-gray-300 shadow"
+        className="rounded-xl h-[400px] border border-gray-300 shadow"
       />
     </div>
   );
