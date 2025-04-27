@@ -37,7 +37,7 @@ export async function getRecommendations(userId: string, preferences?: string[] 
       userId,
       preferences: combinedPreferences,
       hasToken: !!token,
-      apiUrl: process.env.NEXT_PUBLIC_API_URL
+      apiUrl: RENDER_API_URL
     });
 
     const requestBody = {
@@ -48,12 +48,15 @@ export async function getRecommendations(userId: string, preferences?: string[] 
     
     console.log('Request Body:', JSON.stringify(requestBody, null, 2));
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/recommendations`, {
+    const response = await fetch(`${RENDER_API_URL}/api/recommendations`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Origin': window.location.origin
       },
+      credentials: 'include',
+      mode: 'cors',
       body: JSON.stringify(requestBody)
     });
 
