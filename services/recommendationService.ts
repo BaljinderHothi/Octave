@@ -1,9 +1,6 @@
 //this file handles all the recommendation-related API calls between Nextjs
 //and the deployed backend on Render (using Flask)
 
-//also i put in a lot of console.logs to help debug the issues i was having
-//with the recommendations not being rendered on the page. can remove them
-
 import { Recommendation, RecommendationResponse } from '../types/Recommendation';
 
 const RENDER_API_URL = 'https://octavemodel.onrender.com';
@@ -43,7 +40,7 @@ export async function getRecommendations(userId: string, preferences?: string[] 
     const requestBody = {
       user_id: userId,
       preferences: combinedPreferences,
-      top_n: 3 //3 recs per category (can always change this if we want to show more)
+      top_n: 6
     };
     
     console.log('Request Body:', JSON.stringify(requestBody, null, 2));

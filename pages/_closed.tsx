@@ -7,6 +7,7 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Recommendation } from '../types/Recommendation';
 import { getRecommendations } from '../services/recommendationService';
 import { searchRecommendations } from '../services/searchService';
@@ -24,6 +25,7 @@ export default function Closed() {
   const [userPreferences, setUserPreferences] = useState<string[]>([]);
   const [isSearchResults, setIsSearchResults] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState<{ [key: string]: number }>({});
 
   useEffect(() => {
     //debugging
@@ -185,7 +187,7 @@ export default function Closed() {
     setIsSearchResults(false);
     setSearchQuery('');
     
-    // Reload original recommendations
+    //reload original recommendations
     const userId = localStorage.getItem('userId');
     if (userId) {
       setLoading(true);
@@ -280,6 +282,20 @@ export default function Closed() {
     return groups;
   }, {});
 
+  //functions to do pagination for the recommendations
+  const handleNextPage = (category: string) => {
+    setCurrentPage(prev => ({
+      ...prev,
+      [category]: Math.min((prev[category] || 0) + 1, Math.floor((groupedRecommendations[category]?.length - 1) / 3))
+    }));
+  };
+  const handlePrevPage = (category: string) => {
+    setCurrentPage(prev => ({
+      ...prev,
+      [category]: Math.max((prev[category] || 0) - 1, 0)
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -343,20 +359,58 @@ export default function Closed() {
           </div>
         ) : (
           <div className="space-y-12">
-            {Object.entries(groupedRecommendations).map(([category, recs]) => (
-              <div key={category} className="space-y-6">
-                <h2 className="text-2xl font-semibold text-gray-800">
-                  {isSearchResults 
-                    ? `${category} Recommendations` 
-                    : `Because you liked ${category}...`}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {recs.map((rec) => (
-                    <RecommendationCard key={rec.id} recommendation={rec} />
-                  ))}
+{/* pagination for recommendations */}
+            {Object.entries(groupedRecommendations).map(([category, recs]) => {
+              const pageIndex = currentPage[category] || 0;
+              const totalPages = Math.ceil(recs.length / 3);
+              const displayedRecs = recs.slice(pageIndex * 3, pageIndex * 3 + 3);
+
+              return (
+                <div key={category} className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-semibold text-gray-800">
+                      {isSearchResults 
+                        ? `${category} Recommendations` 
+                        : `Because you liked ${category}...`}
+                    </h2>
+                    {totalPages > 1 && (
+                      <div className="flex items-center gap-4">
+                        <button
+                          onClick={() => handlePrevPage(category)}
+                          disabled={pageIndex === 0}
+                          className={`p-2 rounded-full ${
+                            pageIndex === 0 
+                              ? 'text-gray-400 cursor-not-allowed' 
+                              : 'text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          <ChevronLeft className="h-6 w-6" />
+                        </button>
+                        <span className="text-sm text-gray-600">
+                          {pageIndex + 1} of {totalPages}
+                        </span>
+                        <button
+                          onClick={() => handleNextPage(category)}
+                          disabled={pageIndex >= totalPages - 1}
+                          className={`p-2 rounded-full ${
+                            pageIndex >= totalPages - 1
+                              ? 'text-gray-400 cursor-not-allowed' 
+                              : 'text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          <ChevronRight className="h-6 w-6" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {displayedRecs.map((rec) => (
+                      <RecommendationCard key={rec.id} recommendation={rec} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
