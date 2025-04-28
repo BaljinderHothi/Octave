@@ -4,9 +4,9 @@
 //DELETE = delete user account
 
 import { NextApiResponse } from 'next';
-import dbConnect from '../../../lib/mongoose';
-import User from '../../../models/User';
-import { withAuth, AuthenticatedRequest } from '../../../lib/auth';
+import dbConnect from '@/lib/mongoose';
+import User from '@/models/User';
+import { withAuth, AuthenticatedRequest } from '@/lib/auth';
 import * as bcrypt from 'bcryptjs';
 
 async function handler(
