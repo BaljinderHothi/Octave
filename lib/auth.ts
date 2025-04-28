@@ -2,8 +2,8 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import jwt from 'jsonwebtoken';
-import User from '../models/User';
-import dbConnect from './mongoose';
+import User from '@/models/User';
+import dbConnect from '@/lib/mongoose';
 
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is not set');

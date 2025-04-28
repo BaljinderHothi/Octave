@@ -6,6 +6,8 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Settings, ArrowLeft, Camera, CircleUserRound } from 'lucide-react';
 import Image from 'next/image';
+import BadgeDisplay from '@/components/BadgeDisplay';  
+import type { Badge } from '@/models/User';
 
 interface UserProfile {
   firstName: string;
@@ -22,6 +24,7 @@ interface UserProfile {
   };
   favorites: any[];
   wishlist: any[];
+  badges?: Badge[];
 }
 
 export default function Profile() {
@@ -315,6 +318,12 @@ export default function Profile() {
               </div>
             </div>
           </div>
+
+          {/* Badges Section */}
+          <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
+            <BadgeDisplay badges={profile.badges || []} />
+          </div>
+
         </div>
       </div>
     </div>
