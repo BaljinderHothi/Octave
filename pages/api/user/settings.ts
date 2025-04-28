@@ -1,7 +1,6 @@
-//API endpoint to handle user profile management
-//GET = retrieve user profile
-//PUT = update user profile
-//DELETE = delete user account
+//API endpoint to handle user settings
+//GET = retrieve user settings
+//PUT = update user settings
 
 import { NextApiResponse } from 'next';
 import dbConnect from '@/lib/mongoose';
@@ -15,34 +14,51 @@ async function handler(
 ) {
   await dbConnect();
 
-  //Fetch user profile
+  // get current settings
   if (req.method === 'GET') {
     try {
-     
       const user = req.user;
-      
-
       const userObject = user.toObject();
       delete userObject.password;
-
+      
       return res.status(200).json({
         success: true,
         data: userObject
       });
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error fetching settings:', error);
       return res.status(500).json({
         success: false,
-        message: 'Error fetching user profile',
+        message: 'Error fetching user settings',
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   }
 
-  //Update user profile
+  // update settings
   if (req.method === 'PUT') {
     try {
-      const { firstName, lastName, username, zipCode, password, preferences } = req.body;
+      const { firstName, lastName, username, email, currentPassword, newPassword, zipCode, phone } = req.body;
+
+      // verify current password
+      if (newPassword) {
+        if (!currentPassword) {
+          return res.status(400).json({
+            success: false,
+            message: 'Current password is required to change password'
+          });
+        }
+
+        const user = await User.findById(req.user._id).select('+password');
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        
+        if (!isMatch) {
+          return res.status(400).json({
+            success: false,
+            message: 'Current password is incorrect'
+          });
+        }
+      }
 
       if (username && username !== req.user.username) {
         const existingUsername = await User.findOne({ username });
@@ -54,25 +70,28 @@ async function handler(
         }
       }
 
+      if (email && email !== req.user.email) {
+        const existingEmail = await User.findOne({ email });
+        if (existingEmail) {
+          return res.status(400).json({
+            success: false,
+            message: 'This email is already registered'
+          });
+        }
+      }
 
       const updateData: any = {};
       
       if (firstName) updateData.firstName = firstName;
       if (lastName) updateData.lastName = lastName;
       if (username) updateData.username = username;
+      if (email) updateData.email = email;
       if (zipCode) updateData.zipCode = zipCode;
-      
+      if (phone) updateData.phone = phone;
 
-      if (preferences) {
-        if (preferences.food) updateData['preferences.food'] = preferences.food;
-        if (preferences.activities) updateData['preferences.activities'] = preferences.activities;
-        if (preferences.places) updateData['preferences.places'] = preferences.places;
-        if (preferences.custom) updateData['preferences.custom'] = preferences.custom;
-      }
-
-      if (password) {
+      if (newPassword) {
         const salt = await bcrypt.genSalt(10);
-        updateData.password = await bcrypt.hash(password, salt);
+        updateData.password = await bcrypt.hash(newPassword, salt);
       }
 
       const updatedUser = await User.findByIdAndUpdate(
@@ -86,33 +105,14 @@ async function handler(
 
       return res.status(200).json({
         success: true,
-        message: 'Profile updated successfully',
+        message: 'Settings updated successfully',
         data: userObject
       });
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('Error updating settings:', error);
       return res.status(500).json({
         success: false,
-        message: 'Error updating user profile',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  }
-
-  //Delete user account
-  if (req.method === 'DELETE') {
-    try {
-      await User.findByIdAndDelete(req.user._id);
-
-      return res.status(200).json({
-        success: true,
-        message: 'User account deleted successfully'
-      });
-    } catch (error) {
-      console.error('Error deleting account:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Error deleting user account',
+        message: 'Error updating user settings',
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }

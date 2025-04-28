@@ -2,8 +2,8 @@
 //validates email/pass, generating JWT token, returns user data
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import dbConnect from '../../../lib/mongoose';
-import User from '../../../models/User';
+import dbConnect from '@/lib/mongoose';
+import User from '@/models/User';
 import * as bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 

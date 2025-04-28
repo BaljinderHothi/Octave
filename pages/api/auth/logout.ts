@@ -1,7 +1,7 @@
 //API endpoint for user logout
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { withAuth, AuthenticatedRequest } from '../../../lib/auth';
+import { withAuth, AuthenticatedRequest } from '@/lib/auth';
 
 async function handler(
   req: AuthenticatedRequest,
