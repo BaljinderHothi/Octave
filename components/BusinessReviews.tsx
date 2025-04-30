@@ -45,7 +45,6 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  // Fetch reviews and check current user
   useEffect(() => {
     const fetchReviews = async () => {
       try {

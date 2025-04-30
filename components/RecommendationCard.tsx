@@ -1,6 +1,8 @@
 //recommendation card component for the homepage
 
 import Image from 'next/image';
+import { Star } from 'lucide-react';
+import { useRouter } from 'next/router';
 import { Recommendation } from '../types/Recommendation';
 
 interface RecommendationCardProps {
@@ -8,6 +10,8 @@ interface RecommendationCardProps {
 }
 
 export default function RecommendationCard({ recommendation }: RecommendationCardProps) {
+  const router = useRouter();
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
       <div className="relative h-48 w-full">
@@ -30,9 +34,16 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
           <span className="text-yellow-400">★</span>
           <span className="ml-1 text-sm">{recommendation.rating.toFixed(1)}</span>
         </div>
-        <p className="text-sm text-gray-700 italic">
+        <p className="text-sm text-gray-700 italic mb-2">
           {recommendation.explanation}
         </p>
+        <button 
+          onClick={() => router.push(`/business/${recommendation.id}`)}
+          className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center"
+        >
+          <Star size={16} className="mr-1" />
+          Reviews
+        </button>
       </div>
     </div>
   );

@@ -17,6 +17,7 @@
     "formidable": "^3.5.2",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.483.0",
+    "mapbox-gl": "^3.11.1",
     "mongodb": "^6.15.0",
     "mongoose": "^8.12.2",
     "next": "canary",

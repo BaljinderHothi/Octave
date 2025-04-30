@@ -1,6 +1,6 @@
 //this file is just for the types of the recommendations
 export interface Recommendation {
-  id: string;
+  id: string; //this is the BUSINESS ID!!!
   name: string;
   categories: string[];
   rating: number;
