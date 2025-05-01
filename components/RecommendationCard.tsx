@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { Star } from 'lucide-react';
 import { useRouter } from 'next/router';
-import { Recommendation } from '../types/Recommendation';
+import { Recommendation } from '@/types/Recommendation';
 
 interface RecommendationCardProps {
   recommendation: Recommendation;

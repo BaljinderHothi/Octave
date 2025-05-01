@@ -45,6 +45,13 @@ async function handler(
         .lean();
 
       const total = await Review.countDocuments(query);
+      
+      if (userId && userId === req.user._id.toString()) {
+        const actualReviewCount = await Review.countDocuments({ user: req.user._id });
+        if (req.user.reviewCount !== actualReviewCount) {
+          await req.user.updateOne({ $set: { reviewCount: actualReviewCount } });
+        }
+      }
 
       return res.status(200).json({
         success: true,
@@ -100,6 +107,13 @@ async function handler(
         images: images || [],
         isPublic: isPublic !== false
       });
+      
+      if (req.user.reviewCount < 0) {
+        const actualReviewCount = await Review.countDocuments({ user: req.user._id });
+        await req.user.updateOne({ $set: { reviewCount: actualReviewCount + 1 } }); 
+      } else {
+        await req.user.updateOne({ $inc: { reviewCount: 1 } });
+      }
 
       //4/30/25 - whenever we submit a new review, we'll make the sentiment analysis model
       //read the rating and text, then put those additionalPreferences into the database

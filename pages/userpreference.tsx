@@ -5,6 +5,9 @@
 
 import { useState, ChangeEvent, KeyboardEvent, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import BadgeNotification from '@/components/BadgeNotification'
+import { checkPreferenceBadges } from '@/services/badgeService'
+import type { Badge } from '@/models/User'
 
 export default function UserPreference() {
   const router = useRouter()
@@ -12,6 +15,8 @@ export default function UserPreference() {
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isNewUser, setIsNewUser] = useState(false)
+  const [newBadge, setNewBadge] = useState<Badge | null>(null)
+
 
   const [form, setForm] = useState({
     food: [] as string[],
@@ -144,6 +149,10 @@ export default function UserPreference() {
         throw new Error(data.message || 'Failed to save preferences')
       }
 
+      const { newBadge: earnedBadge } = await checkPreferenceBadges();
+      if (earnedBadge) {
+        setNewBadge(earnedBadge);
+      }
 
       alert('Preferences saved successfully!')
       
@@ -222,6 +231,11 @@ export default function UserPreference() {
 
   return (
     <section className={sectionClass}>
+      {/* Badge notification */}
+      <BadgeNotification 
+        newBadge={newBadge}
+        onClose={() => setNewBadge(null)}
+      />
 
       <h1 className="text-3xl font-bold mb-1">
         {isNewUser ? 'Tell us what you like!' : 'Update Your Preferences'}

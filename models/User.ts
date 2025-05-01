@@ -19,7 +19,24 @@ export interface IUser extends Document {
   };
   favorites: mongoose.Types.ObjectId[]; 
   wishlist: mongoose.Types.ObjectId[]; 
+  badges: string[];
+  reviewCount: number;
   createdAt: Date;
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: string;
+  acquired: boolean;
+  dateAcquired?: Date;
+  progress?: {
+    current: number;
+    total: number;
+  };
+  requirementCount?: number;
 }
 
 const UserSchema = new Schema(
@@ -48,6 +65,14 @@ const UserSchema = new Schema(
       ref: 'Business',
       default: [] 
     }],
+    badges: { 
+      type: Array, 
+      default: [] 
+    },
+    reviewCount: { 
+      type: Number, 
+      default: 0 
+    },
     createdAt: { type: Date, default: Date.now },
   },
   { collection: "users" }
