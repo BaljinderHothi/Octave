@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import { saveToLocalStorage, getFromLocalStorage } from '@/utils/storage';
 import MapboxNYC from 'components/MapboxNYC';
 import { MapPin, Calendar, Clock, Phone, Star, Grid, RefreshCw } from 'lucide-react';
+import { useBadges } from '@/components/BadgeContext';
 
 export default function GeneratedItinerary() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function GeneratedItinerary() {
   const [selectedLocation, setSelectedLocation] = useState<{lng: number, lat: number} | null>(null);
   const [filterRadius, setFilterRadius] = useState<number>(5);
   const [filteredBusinesses, setFilteredBusinesses] = useState<any[]>([]);
+  const { checkBadgesForEvent } = useBadges();
 
   const handleSaveItinerary = async () => {
     try {
@@ -38,6 +40,8 @@ export default function GeneratedItinerary() {
   
       if (res.ok) {
         alert('Itinerary saved!');
+        
+        checkBadgesForEvent('ITINERARY_CREATED');
       } else {
         alert(`Error saving itinerary: ${data.error || 'Unknown error'}`);
       }
@@ -237,6 +241,11 @@ export default function GeneratedItinerary() {
             activities: prefs.activities || [],
             places: prefs.places || [],
           });
+          console.log('Loaded explicit user preferences:', {
+            food: prefs.food || [],
+            activities: prefs.activities || [],
+            places: prefs.places || []
+          });
         }
       })
       .catch(err => console.error('Failed to fetch preferences:', err));
@@ -289,22 +298,34 @@ export default function GeneratedItinerary() {
   };
 
   const matchesUserPrefs = (business: any, prefs: string[]) => {
-    if (!prefs.length) return true; //if no preferences, consider it a match
+    if (!prefs.length) return true;
     
+
     const titles = business.categories?.map((c: any) => `${c.title} ${c.alias}`.toLowerCase()) || [];
-    return prefs.some(pref =>
-      titles.some((title: string) => title.includes(pref.toLowerCase()))
-    );
+    
+    //check if the user's explicit preferences match any business categories
+    //only using the categories from initial preferences, not the additionalPreference (because
+    //i havent found a way to categorize them into food, activity, place yet)
+    const hasMatch = prefs.some(pref => {
+      const lowerPref = pref.toLowerCase();
+      return titles.some((title: string) => 
+        title.includes(lowerPref) || 
+        (lowerPref.endsWith('s') && title.includes(lowerPref.slice(0, -1))) ||
+        (!lowerPref.endsWith('s') && title.includes(lowerPref + 's'))
+      );
+    });
+    
+    return hasMatch;
   };
 
   const pickStrict = (businesses: any[], include: string[], prefs: string[], ...excludeGroups: string[][]) => {
+    //find businesses that match both the category type and user preferences
     const filtered = businesses.filter(b =>
       isStrictlyInCategory(b, include, excludeGroups) &&
       matchesUserPrefs(b, prefs)
     );
     
     if (filtered.length === 0) {
-     
       const categoryMatches = businesses.filter(b => 
         isStrictlyInCategory(b, include, excludeGroups)
       );
@@ -423,6 +444,33 @@ export default function GeneratedItinerary() {
         <div className="flex flex-col items-start mb-6">
           <h1 className="text-2xl font-bold">Personalized Itinerary</h1>
           
+
+          <div className="mt-2 text-sm text-gray-600">
+            <div className="flex items-center">
+              <p className="font-medium">Using your selected preferences:</p>
+              <div className="relative ml-1 group">
+                <span className="cursor-help text-indigo-500">ⓘ</span>
+                <div className="absolute z-10 bg-white p-2 rounded shadow-lg w-64 text-xs opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  Only using preferences from your initial profile setup. Additional preferences coming from your reviews are not used for this feature (yet).
+                </div>
+              </div>
+            </div>
+            <div className="mt-1 space-y-1">
+              {userPrefs.food.length > 0 && (
+                <p>• Food: {userPrefs.food.join(', ')}</p>
+              )}
+              {userPrefs.activities.length > 0 && (
+                <p>• Activities: {userPrefs.activities.join(', ')}</p>
+              )}
+              {userPrefs.places.length > 0 && (
+                <p>• Places: {userPrefs.places.join(', ')}</p>
+              )}
+              {userPrefs.food.length === 0 && userPrefs.activities.length === 0 && userPrefs.places.length === 0 && (
+                <p className="italic">No preferences set - showing general recommendations</p>
+              )}
+            </div>
+          </div>
+          
           {selectedLocation && (
             <div className="mt-2 text-sm text-gray-600 flex items-center">
               <MapPin size={16} className="mr-1 text-indigo-600" />
@@ -496,7 +544,6 @@ export default function GeneratedItinerary() {
     Save Itinerary to Wishlist
   </button>
 </div>
-
       </div>
     </div>
   );
