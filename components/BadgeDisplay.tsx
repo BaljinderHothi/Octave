@@ -1,13 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Badge } from '@/models/User';
 import Link from 'next/link';
+import { useBadges } from '@/components/BadgeContext';
 
-interface BadgeDisplayProps {
-  badges: Badge[];
-}
-
-export default function BadgeDisplay({ badges }: BadgeDisplayProps) {
+export default function BadgeDisplay() {
+  const { badges } = useBadges();
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+  }, []);
 
   const badgesByCategory: Record<string, Badge[]> = {};
   badges.forEach(badge => {
@@ -25,6 +29,10 @@ export default function BadgeDisplay({ badges }: BadgeDisplayProps) {
     social: { icon: '👥', title: 'Social' }
   };
 
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="mt-6">
       <div className="flex justify-between items-center mb-4">
@@ -36,21 +44,20 @@ export default function BadgeDisplay({ badges }: BadgeDisplayProps) {
           View All Badges
         </Link>
       </div>
-      {Object.entries(badgesByCategory).length === 0 ? (
-        <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-500">
-          <div className="text-3xl mb-2">🏅</div>
-          <p>Complete activities to earn badges!</p>
+      
+      {badges.length === 0 ? (
+        <div className="text-center py-4">
+          <p className="text-sm text-gray-500">Loading badges...</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
           {Object.entries(badgesByCategory).map(([category, categoryBadges]) => (
             <div key={category} className="bg-gray-50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-700 capitalize mb-3">
-                <span className="mr-2">{categoryInfo[category]?.icon || '🏅'}</span>
-                {categoryInfo[category]?.title || category}
+              <h4 className="text-sm font-medium mb-3 flex items-center">
+                <span className="mr-1">{categoryInfo[category]?.icon || '🏆'}</span>
+                {categoryInfo[category]?.title || category.charAt(0).toUpperCase() + category.slice(1)}
               </h4>
-              
-              <div className="flex flex-wrap gap-3">
+              <div className="grid grid-cols-5 gap-2">
                 {categoryBadges.map(badge => (
                   <div 
                     key={badge.id}

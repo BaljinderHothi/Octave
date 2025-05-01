@@ -648,6 +648,82 @@ export async function checkMultipleItinerariesBadge(): Promise<{ updatedBadges: 
   }
 }
 
+export async function checkProfileCompletionBadge(): Promise<{ updatedBadges: Badge[], newBadge: Badge | null }> {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No authentication token found');
+
+    const response = await fetch('/api/user/profile', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) throw new Error('Failed to fetch user profile');
+    
+    const userData = await response.json();
+    const profile = userData.data;
+    
+    const badgesResponse = await fetch('/api/user/badges', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!badgesResponse.ok) throw new Error('Failed to fetch badges');
+    
+    const badgesData = await badgesResponse.json();
+    let badges = badgesData.data.badges;
+    let newlyAcquiredBadge: Badge | null = null;
+    
+    const profileProBadge = badges.find((b: Badge) => b.id === BADGES.PROFILE.COMPLETE_PROFILE.id);
+    
+    if (profileProBadge && !profileProBadge.acquired) {
+      const hasFirstName = profile.firstName && profile.firstName.trim() !== '';
+      const hasLastName = profile.lastName && profile.lastName.trim() !== '';
+      const hasUsername = profile.username && profile.username.trim() !== '';
+      const hasEmail = profile.email && profile.email.trim() !== '';
+      const hasZipCode = profile.zipCode && profile.zipCode.trim() !== '';
+      const hasProfilePicture = !!profile.profilePicture;
+      
+      const hasPreferences = profile.preferences && (
+        (profile.preferences.food && profile.preferences.food.length > 0) ||
+        (profile.preferences.activities && profile.preferences.activities.length > 0) ||
+        (profile.preferences.places && profile.preferences.places.length > 0) ||
+        (profile.preferences.custom && profile.preferences.custom.length > 0)
+      );
+      
+      if (hasFirstName && hasLastName && hasUsername && hasEmail && hasZipCode && hasProfilePicture && hasPreferences) {
+        profileProBadge.acquired = true;
+        profileProBadge.dateAcquired = new Date();
+        newlyAcquiredBadge = {...profileProBadge};
+        
+        const updateResponse = await fetch('/api/user/badges', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ badges })
+        });
+        
+        if (!updateResponse.ok) throw new Error('Failed to update badges');
+        
+        const result = await updateResponse.json();
+        return { 
+          updatedBadges: result.data.badges,
+          newBadge: newlyAcquiredBadge
+        };
+      }
+    }
+    
+    return { updatedBadges: badges, newBadge: null };
+  } catch (error) {
+    console.error('Error checking profile completion badge:', error);
+    return { updatedBadges: [], newBadge: null };
+  }
+}
+
 //check all badges at once 
 export async function checkAllBadges(): Promise<{ updatedBadges: Badge[], newBadge: Badge | null }> {
   let currentBadges: Badge[] = [];
@@ -668,6 +744,16 @@ export async function checkAllBadges(): Promise<{ updatedBadges: Badge[], newBad
     } else {
       console.error('Could not fetch current badges');
       return { updatedBadges: [], newBadge: null };
+    }
+    
+    try {
+      const profileBadgeResult = await checkProfileCompletionBadge();
+      if (profileBadgeResult.newBadge) {
+        return profileBadgeResult;
+      }
+      currentBadges = profileBadgeResult.updatedBadges;
+    } catch (err) {
+      console.error('Error checking profile completion badge:', err);
     }
     
     try {
@@ -730,7 +816,28 @@ export async function checkAllBadges(): Promise<{ updatedBadges: Badge[], newBad
       console.error('Error checking preference badges:', err);
     }
     
-    //return the current badges
+    
+    // try {
+    //   const firstItineraryResult = await checkFirstItineraryBadge();
+    //   if (firstItineraryResult.newBadge) {
+    //     return firstItineraryResult;
+    //   }
+    //   currentBadges = firstItineraryResult.updatedBadges;
+    // } catch (err) {
+    //   console.error('Error checking first itinerary badge:', err);
+    // }
+    
+    // try {
+    //   const multipleItinerariesResult = await checkMultipleItinerariesBadge();
+    //   if (multipleItinerariesResult.newBadge) {
+    //     return multipleItinerariesResult;
+    //   }
+    //   currentBadges = multipleItinerariesResult.updatedBadges;
+    // } catch (err) {
+    //   console.error('Error checking multiple itineraries badge:', err);
+    // }
+    
+    
     return { updatedBadges: currentBadges, newBadge: null };
   } catch (error) {
     console.error('Error checking all badges:', error);

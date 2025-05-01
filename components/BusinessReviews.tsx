@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Star, ThumbsUp, Trash2, Edit, ChevronDown, ChevronUp } from 'lucide-react';
 import BadgeNotification from './BadgeNotification';
 import type { Badge } from '@/models/User';
+import { useBadges } from '@/components/BadgeContext';
 
 interface User {
   _id: string;
@@ -46,7 +47,7 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
   const [expandedReviews, setExpandedReviews] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [newBadge, setNewBadge] = useState<Badge | null>(null);
+  const { checkBadgesForEvent } = useBadges();
 
   // Fetch reviews and check current user
   useEffect(() => {
@@ -186,17 +187,7 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
       setReviewImages([]);
       setShowReviewForm(false);
 
-      try {
-        //check all badges at once
-        const { checkAllBadges } = await import('../services/badgeService');
-        const badgeResult = await checkAllBadges();
-        
-        if (badgeResult.newBadge) {
-          setNewBadge(badgeResult.newBadge);
-        }
-      } catch (err) {
-        console.error('Error checking for badges:', err);
-      }
+      checkBadgesForEvent('REVIEW_ADDED');
     } catch (err) {
       console.error('Error submitting review:', err);
       setError(err instanceof Error ? err.message : 'Failed to submit review');
@@ -263,6 +254,8 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
       }
       
       setReviews(prev => prev.filter(review => review._id !== reviewId));
+      
+      checkBadgesForEvent('REVIEW_DELETED');
     } catch (err) {
       console.error('Error deleting review:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete review');
@@ -588,12 +581,6 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
           )}
         </div>
       )}
-      
-      {/* Badge notification */}
-      <BadgeNotification 
-        newBadge={newBadge}
-        onClose={() => setNewBadge(null)}
-      />
     </div>
   );
 } 
