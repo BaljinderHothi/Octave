@@ -39,7 +39,7 @@ export default function GeneratedItinerary() {
   
   const [userPrefs, setUserPrefs] = useState({food: [] as string[], activities: [] as string[], places: [] as string[]})
   
-  
+
   const formatPhone = (phone: string) => {
     if (!phone) return 'N/A';
     const match = phone.match(/^\+1(\d{3})(\d{3})(\d{4})$/);
@@ -114,7 +114,7 @@ export default function GeneratedItinerary() {
                 <span>
                   {entries.map((e, idx) => `${formatTime(e.start)} – ${formatTime(e.end)}${e.is_overnight ? ' (Overnight)' : ''}`)
                     .join(', ')}
-                </span>
+    </span>
               </li>
             ))}
           </ul>
@@ -150,11 +150,11 @@ export default function GeneratedItinerary() {
           <span className="font-semibold">Categories:</span>
         </div>
         <div className="flex flex-wrap gap-2 mt-1">
-          {categories.map((cat, idx) => (
+        {categories.map((cat, idx) => (
             <span key={idx} className="px-2 py-1 bg-gray-100 rounded-full text-xs">
               {cat.title}
-            </span>
-          ))}
+          </span>
+        ))}
         </div>
       </div>
     );
@@ -254,7 +254,7 @@ export default function GeneratedItinerary() {
   ) => {
     if (!Array.isArray(business.categories)) return false;
     const aliases: string[] = business.categories.map((c: any) => c.alias.toLowerCase());
-    return (
+  return (
       aliases.some((alias: string) => include.includes(alias)) &&
       !excludeGroups.some(group => group.some(ex => aliases.includes(ex)))
     );
@@ -319,19 +319,19 @@ export default function GeneratedItinerary() {
         >
           <RefreshCw size={16} className="mr-1" />
           Generate new suggestion
-        </button>
-      </div>
+            </button>
+          </div>
       
-      {!item ? (
+          {!item ? (
         <div className="flex justify-center items-center h-28">
           <p className="text-gray-500">Loading suggestions...</p>
         </div>
-      ) : (
+          ) : (
         <div className="flex gap-4">
           {item.image_url ? (
-            <img
-              src={item.image_url}
-              alt={item.name}
+                <img
+                  src={item.image_url}
+                  alt={item.name}
               className="w-32 h-32 object-cover rounded-lg"
             />
           ) : (
@@ -348,20 +348,20 @@ export default function GeneratedItinerary() {
               <span>{formatPhone(item.phone)}</span>
             </div>
             
-            {item.address && (
+                {item.address && (
               <div className="mt-1 text-sm text-gray-600 flex">
                 <MapPin size={14} className="mr-1 mt-1 flex-shrink-0" />
-                <div>
-                  {item.address.map((line: string, idx: number) => (
-                    <p key={idx}>{line}</p>
-                  ))}
+                  <div>
+                    {item.address.map((line: string, idx: number) => (
+                      <p key={idx}>{line}</p>
+                    ))}
                 </div>
-              </div>
-            )}
+                  </div>
+                )}
             
-            {item.rating && (
+                {item.rating && (
               <div className="mt-2 text-sm flex items-center gap-2">
-                {renderStars(item.rating)}
+                    {renderStars(item.rating)}
                 {item.review_count && (
                   <span className="text-gray-500">• {item.review_count} reviews</span>
                 )}
@@ -454,13 +454,13 @@ export default function GeneratedItinerary() {
         </div>
 
         <div className="mt-6 flex justify-center">
-          <button
+      <button
             onClick={generateRandom}
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium flex items-center transition-colors"
-          >
+      >
             <RefreshCw size={18} className="mr-2" />
-            Regenerate Full Itinerary
-          </button>
+        Regenerate Full Itinerary
+      </button>
         </div>
       </div>
     </div>
