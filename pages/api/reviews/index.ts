@@ -104,7 +104,10 @@ async function handler(
       //4/30/25 - whenever we submit a new review, we'll make the sentiment analysis model
       //read the rating and text, then put those additionalPreferences into the database
       try {
-        const preferenceApiUrl = "http://127.0.0.1:5005";
+        // const preferenceApiUrl = "http://127.0.0.1:5005";
+        const preferenceApiUrl = "https://octavesentimentanalysis.onrender.com";
+
+  
         console.log('Calling preference API at:', preferenceApiUrl);
         
         const userIdRaw = req.user._id;
@@ -122,80 +125,133 @@ async function handler(
         };
         console.log('Sending data to preference API:', JSON.stringify(requestBody));
         
-        console.log('Attempting fetch to:', `${preferenceApiUrl}/api/reviews/analyze`);
+        // First check if API is awake with a timeout
+        let apiAwake = false;
         
-        try {
-          //test if the API is accessible at all
-          const testResponse = await fetch(`${preferenceApiUrl}/api/test`);
-          console.log('API test endpoint response status:', testResponse.status);
-          if (testResponse.ok) {
-            console.log('API test endpoint response:', await testResponse.json());
-          } else {
-            console.error('API test endpoint error:', await testResponse.text());
-          }
-        } catch (testError) {
-          console.error('Error accessing API test endpoint:', testError);
-        }
-        
-        //then try the real request
-        const response = await fetch(`${preferenceApiUrl}/api/reviews/analyze`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(requestBody)
-        });
-
-        console.log('Preference API response status:', response.status);
-        
-        if (response.ok) {
-          const analysisResult = await response.json();
-          console.log('Review analysis result:', analysisResult);
-          
-          //direct update IF the review is positive and the preferences didn't update
-          if (analysisResult.isPositive && !analysisResult.preferencesUpdated) {            
+        // Try to wake up the API if needed
+        const wakeupApiWithRetries = async (maxRetries = 2) => {
+          for (let attempt = 0; attempt < maxRetries; attempt++) {
             try {
-              const directUpdateResponse = await fetch(`${preferenceApiUrl}/api/user-preferences/${req.user._id.toString()}/update`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                  categories: analysisResult.categories || ['direct-update-test'] 
-                })
+              console.log(`API wake-up attempt ${attempt + 1}/${maxRetries}...`);
+              const testResponse = await fetch(`${preferenceApiUrl}/api/test`, {
+                signal: AbortSignal.timeout(5000) // 5 second timeout
               });
               
-              console.log('Direct update response status:', directUpdateResponse.status);
-              if (directUpdateResponse.ok) {
-                console.log('Direct update response:', await directUpdateResponse.json());
+              if (testResponse.ok) {
+                console.log('API is awake and responding!');
+                apiAwake = true;
+                return true;
               } else {
-                console.error('Direct update error:', await directUpdateResponse.text());
+                console.log(`API test endpoint returned status: ${testResponse.status}. Retrying...`);
               }
-            } catch (directUpdateError) {
-              console.error('Error making direct update request:', directUpdateError);
+            } catch (e) {
+              console.log(`Wake-up attempt ${attempt + 1} failed:`, e);
+            }
+            
+            // Wait between retries
+            if (attempt < maxRetries - 1) {
+              console.log('Waiting before next wake-up attempt...');
+              await new Promise(resolve => setTimeout(resolve, 3000));
             }
           }
           
+          return false;
+        };
+        
+        await wakeupApiWithRetries();
+        
+        if (!apiAwake) {
+          console.log('API appears to be down or still waking up. Proceeding without preference update.');
           return res.status(201).json({
             success: true,
             data: review,
             analysis: {
-              isPositive: analysisResult.isPositive,
-              preferencesUpdated: analysisResult.preferencesUpdated,
-              categories: analysisResult.categories
+              isPositive: null,
+              preferencesUpdated: false,
+              categories: null,
+              error: 'API unavailable - likely in sleep mode'
             }
           });
-        } else {
-          const errorText = await response.text();
-          console.error('Error from preference API:', errorText);
+        }
+        
+        // If API is awake, proceed with the real request with a longer timeout
+        console.log('Attempting fetch to:', `${preferenceApiUrl}/api/reviews/analyze`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
+        try {
+          const response = await fetch(`${preferenceApiUrl}/api/reviews/analyze`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody),
+            signal: controller.signal
+          });
+
+          clearTimeout(timeoutId); // Clear the timeout
+          console.log('Preference API response status:', response.status);
+          
+          if (response.ok) {
+            const analysisResult = await response.json();
+            console.log('Review analysis result:', analysisResult);
+            
+            //direct update IF the review is positive and the preferences didn't update
+            if (analysisResult.isPositive && !analysisResult.preferencesUpdated) {            
+              try {
+                const directUpdateResponse = await fetch(`${preferenceApiUrl}/api/user-preferences/${req.user._id.toString()}/update`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ 
+                    categories: analysisResult.categories || ['direct-update-test'] 
+                  }),
+                  signal: AbortSignal.timeout(8000) // 8 second timeout
+                });
+                
+                console.log('Direct update response status:', directUpdateResponse.status);
+                if (directUpdateResponse.ok) {
+                  console.log('Direct update response:', await directUpdateResponse.json());
+                } else {
+                  console.error('Direct update error:', await directUpdateResponse.text());
+                }
+              } catch (directUpdateError) {
+                console.error('Error making direct update request:', directUpdateError);
+              }
+            }
+            
+            return res.status(201).json({
+              success: true,
+              data: review,
+              analysis: {
+                isPositive: analysisResult.isPositive,
+                preferencesUpdated: analysisResult.preferencesUpdated,
+                categories: analysisResult.categories
+              }
+            });
+          } else {
+            const errorText = await response.text();
+            console.error('Error from preference API:', errorText);
+          }
+        } catch (fetchError) {
+          clearTimeout(timeoutId); // Ensure timeout is cleared
+          console.error('Fetch error for review analysis:', fetchError);
         }
       } catch (apiError) {
         console.error('Error calling preference API:', apiError);
       }
 
+      // Final fallback to return review without analysis
       return res.status(201).json({
         success: true,
-        data: review
+        data: review,
+        analysis: {
+          isPositive: null,
+          preferencesUpdated: false,
+          categories: [],
+          error: 'Analysis not performed - API may be unavailable'
+        }
       });
     } catch (error) {
       console.error('Error creating review:', error);
