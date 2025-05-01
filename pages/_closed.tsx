@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Recommendation } from '../types/Recommendation';
-import { getRecommendations } from '../services/recommendationService';
+import { getRecommendations, wakeupRenderService } from '../services/recommendationService';
 import { searchRecommendations } from '../services/searchService';
 import RecommendationCard from '../components/RecommendationCard';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -26,6 +26,8 @@ export default function Closed() {
   const [isSearchResults, setIsSearchResults] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState<{ [key: string]: number }>({});
+  const [apiStatus, setApiStatus] = useState<'connected' | 'connecting' | 'down'>('connected');
+  const [apiStatusMessage, setApiStatusMessage] = useState<string>('');
 
   useEffect(() => {
     //debugging
@@ -121,6 +123,13 @@ export default function Closed() {
       } catch (err) {
         console.error('Error fetching user data:', err);
         setError('Failed to load recommendations. Please try again later.');
+        
+        if (err instanceof Error && 
+            (err.message.includes('API is not healthy') || 
+             err.message.includes('Failed to fetch'))) {
+          setApiStatus('down');
+          setApiStatusMessage('The recommendation service is currently unavailable, might be in sleep mode');
+        }
       } finally {
         setLoading(false);
       }
@@ -207,6 +216,25 @@ export default function Closed() {
     }
   };
 
+  //function to handle API reconnection attempts
+  const handleReconnectApi = async () => {
+    setApiStatus('connecting');
+    setApiStatusMessage('Attempting to wake up the recommendation service:');
+    
+    const success = await wakeupRenderService();
+    
+    if (success) {
+      setApiStatusMessage('Wake-up signal sent');
+      setTimeout(() => {
+        setApiStatus('connected');
+        clearSearch();
+      }, 5000);
+    } else {
+      setApiStatus('down');
+      setApiStatusMessage('Unable to connect to the recommendation service. Please try again later.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex justify-center items-center">
@@ -284,11 +312,16 @@ export default function Closed() {
 
   //functions to do pagination for the recommendations
   const handleNextPage = (category: string) => {
+    const itemsPerPage = isSearchResults ? 4 : 3; // Same value as in the render section
     setCurrentPage(prev => ({
       ...prev,
-      [category]: Math.min((prev[category] || 0) + 1, Math.floor((groupedRecommendations[category]?.length - 1) / 3))
+      [category]: Math.min(
+        (prev[category] || 0) + 1, 
+        Math.floor((groupedRecommendations[category]?.length - 1) / itemsPerPage)
+      )
     }));
   };
+  
   const handlePrevPage = (category: string) => {
     setCurrentPage(prev => ({
       ...prev,
@@ -362,8 +395,9 @@ export default function Closed() {
 {/* pagination for recommendations */}
             {Object.entries(groupedRecommendations).map(([category, recs]) => {
               const pageIndex = currentPage[category] || 0;
-              const totalPages = Math.ceil(recs.length / 3);
-              const displayedRecs = recs.slice(pageIndex * 3, pageIndex * 3 + 3);
+              const itemsPerPage = isSearchResults ? 4 : 3; // Show more items per page for search results
+              const totalPages = Math.ceil(recs.length / itemsPerPage);
+              const displayedRecs = recs.slice(pageIndex * itemsPerPage, pageIndex * itemsPerPage + itemsPerPage);
 
               return (
                 <div key={category} className="space-y-6">
@@ -403,7 +437,7 @@ export default function Closed() {
                       </div>
                     )}
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className={`grid ${isSearchResults ? 'grid-cols-1 md:grid-cols-4 gap-4' : 'grid-cols-1 md:grid-cols-3 gap-6'}`}>
                     {displayedRecs.map((rec) => (
                       <RecommendationCard key={rec.id} recommendation={rec} />
                     ))}
@@ -411,6 +445,27 @@ export default function Closed() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {apiStatus !== 'connected' && (
+          <div className="w-full px-4 py-3 mb-6 rounded-lg bg-amber-50 border border-amber-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium text-amber-800">
+                  {apiStatus === 'connecting' ? 'Connecting to API...' : 'API Connection Issue'}
+                </h3>
+                <p className="text-sm text-amber-700">{apiStatusMessage}</p>
+              </div>
+              {apiStatus === 'down' && (
+                <button
+                  onClick={handleReconnectApi}
+                  className="px-3 py-1.5 text-sm font-medium text-white bg-amber-600 rounded hover:bg-amber-700"
+                >
+                  Wake Up API
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

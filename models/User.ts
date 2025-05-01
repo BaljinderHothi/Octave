@@ -15,6 +15,7 @@ export interface IUser extends Document {
     activities: string[];
     places: string[];
     custom: string[];
+    additionalPreferences: string[]; //this is for the categories that are extracted when they write reviews
   };
   favorites: mongoose.Types.ObjectId[]; 
   wishlist: mongoose.Types.ObjectId[]; 
@@ -52,6 +53,7 @@ const UserSchema = new Schema(
       activities: { type: [String], default: [] },
       places: { type: [String], default: [] },
       custom: { type: [String], default: [] },
+      additionalPreferences: { type: [String], default: [] },
     },
     favorites: [{ 
       type: mongoose.Schema.Types.ObjectId, 

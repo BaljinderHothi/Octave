@@ -115,6 +115,98 @@ async function handler(
         await req.user.updateOne({ $inc: { reviewCount: 1 } });
       }
 
+      //4/30/25 - whenever we submit a new review, we'll make the sentiment analysis model
+      //read the rating and text, then put those additionalPreferences into the database
+      try {
+        const preferenceApiUrl = "http://127.0.0.1:5005";
+        console.log('Calling preference API at:', preferenceApiUrl);
+        
+        const userIdRaw = req.user._id;
+        const userIdString = req.user._id.toString();
+        console.log('User ID type:', typeof userIdRaw);
+        console.log('User ID raw value:', userIdRaw);
+        console.log('User ID as string:', userIdString);
+        
+        const requestBody = {
+          user_id: req.user._id.toString(),
+          businessId,
+          businessName,
+          rating: Number(rating),
+          text
+        };
+        console.log('Sending data to preference API:', JSON.stringify(requestBody));
+        
+        console.log('Attempting fetch to:', `${preferenceApiUrl}/api/reviews/analyze`);
+        
+        try {
+          //test if the API is accessible at all
+          const testResponse = await fetch(`${preferenceApiUrl}/api/test`);
+          console.log('API test endpoint response status:', testResponse.status);
+          if (testResponse.ok) {
+            console.log('API test endpoint response:', await testResponse.json());
+          } else {
+            console.error('API test endpoint error:', await testResponse.text());
+          }
+        } catch (testError) {
+          console.error('Error accessing API test endpoint:', testError);
+        }
+        
+        //then try the real request
+        const response = await fetch(`${preferenceApiUrl}/api/reviews/analyze`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        console.log('Preference API response status:', response.status);
+        
+        if (response.ok) {
+          const analysisResult = await response.json();
+          console.log('Review analysis result:', analysisResult);
+          
+          //direct update IF the review is positive and the preferences didn't update
+          if (analysisResult.isPositive && !analysisResult.preferencesUpdated) {            
+            try {
+              const directUpdateResponse = await fetch(`${preferenceApiUrl}/api/user-preferences/${req.user._id.toString()}/update`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                  categories: analysisResult.categories || ['direct-update-test'] 
+                })
+              });
+              
+              console.log('Direct update response status:', directUpdateResponse.status);
+              if (directUpdateResponse.ok) {
+                console.log('Direct update response:', await directUpdateResponse.json());
+              } else {
+                console.error('Direct update error:', await directUpdateResponse.text());
+              }
+            } catch (directUpdateError) {
+              console.error('Error making direct update request:', directUpdateError);
+            }
+          }
+          
+          return res.status(201).json({
+            success: true,
+            data: review,
+            analysis: {
+              isPositive: analysisResult.isPositive,
+              preferencesUpdated: analysisResult.preferencesUpdated,
+              categories: analysisResult.categories
+            }
+          });
+        } else {
+          const errorText = await response.text();
+          console.error('Error from preference API:', errorText);
+        }
+      } catch (apiError) {
+        console.error('Error calling preference API:', apiError);
+      }
+
       return res.status(201).json({
         success: true,
         data: review
