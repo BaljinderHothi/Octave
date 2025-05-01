@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import type { Badge } from '@/models/User';    
 import { useBadges } from '@/components/BadgeContext';
+import { ArrowLeft } from 'lucide-react';
 
 export default function Badges() {
   const router = useRouter();
@@ -74,7 +75,15 @@ export default function Badges() {
       
       <div className="container mx-auto px-4 py-8 pt-20">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">My Badges</h1>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.push("/profile")}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </button>
+            <h1 className="text-3xl font-bold">My Badges</h1>
+          </div>
           <button
             onClick={handleCheckAllBadges}
             disabled={isCheckingBadges}
