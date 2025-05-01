@@ -1,7 +1,7 @@
 //Creates nav bar for user auth
 //Links to home, itinerary, profile, settings, login/signup 
 
-import { Soup, Settings, CircleUserRound, LogOut } from "lucide-react"
+import { Soup, Settings, CircleUserRound, LogOut, MessageSquare } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
 import Link from "next/link"
@@ -37,12 +37,14 @@ export default function Nav() {
       }
 
       localStorage.removeItem('token')
+      localStorage.removeItem('userFeedback')
       setIsLoggedIn(false)
       
       router.push('/login')
     } catch (error) {
       console.error('Logout error:', error)
       localStorage.removeItem('token')
+      localStorage.removeItem('userFeedback')
       setIsLoggedIn(false)
       router.push('/login')
     }
@@ -72,7 +74,8 @@ export default function Nav() {
         <li><Link href="/" className="hover:text-gray-300">Home</Link></li>
         {isLoggedIn ? (
           <>
-            <li><Link href="/itinerary" className="hover:text-gray-300">Itinerary</Link></li> 
+            <li><Link href="/itinerary" className="hover:text-gray-300">Itinerary</Link></li>
+            <li><Link href="/feedback" className="hover:text-gray-300">Feedback</Link></li>
             <li>
               <Link href="/userpreference" className="hover:text-gray-300">
                 Preferences
