@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { Star, ThumbsUp, Trash2, Edit, ChevronDown, ChevronUp } from 'lucide-react';
+import BadgeNotification from './BadgeNotification';
+import type { Badge } from '@/models/User';
+import { useBadges } from '@/components/BadgeContext';
 
 interface User {
   _id: string;
@@ -44,6 +47,7 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
   const [expandedReviews, setExpandedReviews] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const { checkBadgesForEvent } = useBadges();
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -181,6 +185,8 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
       setReviewRating(5);
       setReviewImages([]);
       setShowReviewForm(false);
+
+      checkBadgesForEvent('REVIEW_ADDED');
     } catch (err) {
       console.error('Error submitting review:', err);
       setError(err instanceof Error ? err.message : 'Failed to submit review');
@@ -247,6 +253,8 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
       }
       
       setReviews(prev => prev.filter(review => review._id !== reviewId));
+      
+      checkBadgesForEvent('REVIEW_DELETED');
     } catch (err) {
       console.error('Error deleting review:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete review');

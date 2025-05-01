@@ -128,6 +128,10 @@ async function handler(
       }
 
       await Review.findByIdAndDelete(id);
+      
+      if (req.user.reviewCount > 0) {
+        await req.user.updateOne({ $inc: { reviewCount: -1 } });
+      }
 
       return res.status(200).json({
         success: true,
