@@ -3,8 +3,13 @@ import type { Badge } from '@/models/User';
 import Link from 'next/link';
 import { useBadges } from '@/components/BadgeContext';
 
-export default function BadgeDisplay() {
-  const { badges } = useBadges();
+interface BadgeDisplayProps {
+  badges?: Badge[];
+}
+
+export default function BadgeDisplay({ badges: propBadges }: BadgeDisplayProps) {
+  const { badges: contextBadges } = useBadges();
+  const badges = propBadges || contextBadges;
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
