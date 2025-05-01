@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import { saveToLocalStorage, getFromLocalStorage } from '@/utils/storage';
 import MapboxNYC from 'components/MapboxNYC';
 import { MapPin, Calendar, Clock, Phone, Star, Grid, RefreshCw } from 'lucide-react';
+import { useBadges } from '@/components/BadgeContext';
 
 export default function RandomItinerary() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function RandomItinerary() {
   const [selectedLocation, setSelectedLocation] = useState<{lng: number, lat: number} | null>(null);
   const [filterRadius, setFilterRadius] = useState<number>(5);
   const [filteredBusinesses, setFilteredBusinesses] = useState<any[]>([]);
+  const { checkBadgesForEvent } = useBadges();
 
   const handleSaveItinerary = async () => {
     try {
@@ -40,6 +42,8 @@ export default function RandomItinerary() {
   
       if (res.ok) {
         alert('Itinerary saved!');
+        
+        checkBadgesForEvent('ITINERARY_CREATED');
       } else {
         alert(`Error saving itinerary: ${data.error || 'Unknown error'}`);
       }

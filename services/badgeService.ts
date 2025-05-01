@@ -525,7 +525,7 @@ export async function checkFirstItineraryBadge(): Promise<{ updatedBadges: Badge
     const token = localStorage.getItem('token');
     if (!token) throw new Error('No authentication token found');
     
-    const itinerariesResponse = await fetch('/api/itineraries', {
+    const itinerariesResponse = await fetch('/api/user/itineraries', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -534,7 +534,7 @@ export async function checkFirstItineraryBadge(): Promise<{ updatedBadges: Badge
     if (!itinerariesResponse.ok) throw new Error('Failed to fetch user itineraries');
     
     const itinerariesData = await itinerariesResponse.json();
-    const userItineraries = itinerariesData.data;
+    const userItineraries = itinerariesData.itineraries || [];
     const itineraryCount = userItineraries.length;
     
     const badgesResponse = await fetch('/api/user/badges', {
@@ -586,7 +586,7 @@ export async function checkMultipleItinerariesBadge(): Promise<{ updatedBadges: 
     const token = localStorage.getItem('token');
     if (!token) throw new Error('No authentication token found');
     
-    const itinerariesResponse = await fetch('/api/itineraries', {
+    const itinerariesResponse = await fetch('/api/user/itineraries', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -595,7 +595,7 @@ export async function checkMultipleItinerariesBadge(): Promise<{ updatedBadges: 
     if (!itinerariesResponse.ok) throw new Error('Failed to fetch user itineraries');
     
     const itinerariesData = await itinerariesResponse.json();
-    const userItineraries = itinerariesData.data;
+    const userItineraries = itinerariesData.itineraries || [];
     const itineraryCount = userItineraries.length;
     
     const badgesResponse = await fetch('/api/user/badges', {
@@ -609,19 +609,24 @@ export async function checkMultipleItinerariesBadge(): Promise<{ updatedBadges: 
     const badgesData = await badgesResponse.json();
     let badges = badgesData.data.badges;
     let newlyAcquiredBadge: Badge | null = null;
+    let progressUpdated = false;
     
     const multipleItinerariesBadge = badges.find((b: Badge) => b.id === BADGES.SOCIAL.MULTIPLE_ITINERARIES.id);
     
-    if (multipleItinerariesBadge && !multipleItinerariesBadge.acquired) {
-      if (multipleItinerariesBadge.progress) {
+    if (multipleItinerariesBadge) {
+      if (multipleItinerariesBadge.progress && multipleItinerariesBadge.progress.current !== itineraryCount) {
         multipleItinerariesBadge.progress.current = itineraryCount;
+        progressUpdated = true;
       }
       
-      if (itineraryCount >= BADGES.SOCIAL.MULTIPLE_ITINERARIES.requirementCount) {
+      if (!multipleItinerariesBadge.acquired && itineraryCount >= BADGES.SOCIAL.MULTIPLE_ITINERARIES.requirementCount) {
         multipleItinerariesBadge.acquired = true;
         multipleItinerariesBadge.dateAcquired = new Date();
         newlyAcquiredBadge = {...multipleItinerariesBadge};
-        
+        progressUpdated = true;
+      }
+      
+      if (progressUpdated) {
         const updateResponse = await fetch('/api/user/badges', {
           method: 'PUT',
           headers: {
@@ -816,27 +821,25 @@ export async function checkAllBadges(): Promise<{ updatedBadges: Badge[], newBad
       console.error('Error checking preference badges:', err);
     }
     
+    try {
+      const firstItineraryResult = await checkFirstItineraryBadge();
+      if (firstItineraryResult.newBadge) {
+        return firstItineraryResult;
+      }
+      currentBadges = firstItineraryResult.updatedBadges;
+    } catch (err) {
+      console.error('Error checking first itinerary badge:', err);
+    }
     
-    // try {
-    //   const firstItineraryResult = await checkFirstItineraryBadge();
-    //   if (firstItineraryResult.newBadge) {
-    //     return firstItineraryResult;
-    //   }
-    //   currentBadges = firstItineraryResult.updatedBadges;
-    // } catch (err) {
-    //   console.error('Error checking first itinerary badge:', err);
-    // }
-    
-    // try {
-    //   const multipleItinerariesResult = await checkMultipleItinerariesBadge();
-    //   if (multipleItinerariesResult.newBadge) {
-    //     return multipleItinerariesResult;
-    //   }
-    //   currentBadges = multipleItinerariesResult.updatedBadges;
-    // } catch (err) {
-    //   console.error('Error checking multiple itineraries badge:', err);
-    // }
-    
+    try {
+      const multipleItinerariesResult = await checkMultipleItinerariesBadge();
+      if (multipleItinerariesResult.newBadge) {
+        return multipleItinerariesResult;
+      }
+      currentBadges = multipleItinerariesResult.updatedBadges;
+    } catch (err) {
+      console.error('Error checking multiple itineraries badge:', err);
+    }
     
     return { updatedBadges: currentBadges, newBadge: null };
   } catch (error) {

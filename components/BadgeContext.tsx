@@ -8,7 +8,9 @@ import {
   checkRestaurantExplorerBadge, 
   checkCoffeeLoverBadge, 
   checkDifferentCategoriesBadge, 
-  checkNYCWandererBadge 
+  checkNYCWandererBadge,
+  checkFirstItineraryBadge,
+  checkMultipleItinerariesBadge
 } from '@/services/badgeService';
 import type { Badge } from '@/models/User';
 
@@ -18,6 +20,8 @@ export type BadgeEventType =
   | 'PROFILE_UPDATED' 
   | 'PREFERENCES_UPDATED' 
   | 'PROFILE_PICTURE_UPDATED'
+  | 'ITINERARY_CREATED'
+  | 'ITINERARY_UPDATED'
   | 'MANUAL_CHECK'
   | 'INITIAL_LOAD';
 
@@ -133,6 +137,17 @@ export function BadgeProvider({ children }: BadgeProviderProps) {
           
         case 'PROFILE_PICTURE_UPDATED':
           result = await checkProfileCompletionBadge();
+          break;
+          
+        case 'ITINERARY_CREATED':
+        case 'ITINERARY_UPDATED':
+          result = await checkFirstItineraryBadge();
+          if (!result.newBadge) {
+            const multipleResult = await checkMultipleItinerariesBadge();
+            if (multipleResult.newBadge) {
+              result = multipleResult;
+            }
+          }
           break;
           
         case 'MANUAL_CHECK':
