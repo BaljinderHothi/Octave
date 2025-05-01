@@ -49,7 +49,6 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
   const [hasMore, setHasMore] = useState(true);
   const { checkBadgesForEvent } = useBadges();
 
-  // Fetch reviews and check current user
   useEffect(() => {
     const fetchReviews = async () => {
       try {

@@ -18,7 +18,35 @@ export default function GeneratedItinerary() {
   const [filterRadius, setFilterRadius] = useState<number>(5);
   const [filteredBusinesses, setFilteredBusinesses] = useState<any[]>([]);
 
-  // Category aliases
+  const handleSaveItinerary = async () => {
+    try {
+      const res = await fetch('/api/itineraries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          food: food?.name,
+          activity: activity?.name,
+          place: place?.name
+        })
+      });
+  
+      const data = await res.json();
+      console.log('Save response:', data);
+  
+      if (res.ok) {
+        alert('Itinerary saved!');
+      } else {
+        alert(`Error saving itinerary: ${data.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error('Failed to save itinerary:', err);
+      alert('Network or server error occurred.');
+    }
+  };
+  
   const foodAliases = ['restaurants', 'italian', 'mexican', 'sushi', 'bbq', 'vegan', 'fast food', 'pizza', 'indian', 'latin fusion', 'taco',
     'thai', 'chinese', 'mediterranean', 'greek', 'french', 'japanese', 'korean', 'vietnamese', 'lebanese', 'cuban', 
     'caribbean', 'ethiopian', 'afghan', 'turkish', 'noodles', 'burgers', 'ramen', 'steakhouse', 'seafood', 'southern',
@@ -453,13 +481,19 @@ export default function GeneratedItinerary() {
           )}
         </div>
 
-        <div className="mt-6 flex justify-center">
+        <div className="mt-6 flex justify-center gap-20">
           <button
             onClick={generateRandom}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium flex items-center transition-colors"
+            className="bg-black hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium flex items-center transition-colors"
           >
             <RefreshCw size={18} className="mr-2" />
             Regenerate Full Itinerary
+          </button>
+          <button
+            onClick={handleSaveItinerary}
+            className="bg-black hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium flex items-center transition-colors"
+          >
+            Save Itinerary to Wishlist
           </button>
         </div>
       </div>

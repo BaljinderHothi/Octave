@@ -9,6 +9,10 @@ import Image from 'next/image';
 import BadgeDisplay from '@/components/BadgeDisplay';  
 import type { Badge } from '@/models/User';
 
+import { format } from 'date-fns';
+import { Trash2 } from 'lucide-react';
+
+
 interface UserProfile {
   firstName: string;
   lastName: string;
@@ -34,6 +38,44 @@ export default function Profile() {
   const [error, setError] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [itineraries, setItineraries] = useState<any[]>([]);
+  const groupItinerariesByMonth = (itineraries: any[]) => {
+    return itineraries.reduce((groups: { [key: string]: any[] }, item) => {
+      const monthKey = format(new Date(item.createdAt), 'MMMM yyyy');
+      if (!groups[monthKey]) groups[monthKey] = [];
+      groups[monthKey].push(item);
+      return groups;
+    }, {});
+  };
+  const grouped = groupItinerariesByMonth(itineraries);
+  const [openGroups, setOpenGroups] = useState<{ [key: string]: boolean }>({});
+  const toggleGroup = (month: string) => {
+    setOpenGroups(prev => ({ ...prev, [month]: !prev[month] }));
+  };
+  const handleDelete = async (id: string) => {
+    const confirmed = window.confirm('Are you sure you want to delete this itinerary?');
+    if (!confirmed) return;
+  
+    const token = localStorage.getItem('token');
+    if (!token) return;
+  
+    try {
+      const res = await fetch(`/api/user/itineraries?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+  
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Delete failed');
+  
+      setItineraries(prev => prev.filter(item => item._id !== id));
+    } catch (err) {
+      alert('Failed to delete itinerary');
+      console.error(err);
+    }
+  };
 
   //fetches user profile data from API
   useEffect(() => {
@@ -66,6 +108,24 @@ export default function Profile() {
 
     fetchProfile();
   }, [router]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+  
+    fetch('/api/user/itineraries', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.itineraries) {
+          setItineraries(data.itineraries);
+        }
+      })
+      .catch(err => console.error('Failed to load itineraries:', err));
+  }, []);
 
   //handles photo upload: validates file type and size, appends to form data, sends to API
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,7 +216,7 @@ export default function Profile() {
             </div>
             <Link
               href="/userpreference"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-700"
             >
               <Settings className="h-4 w-4 mr-2" />
               Edit Preferences
@@ -302,19 +362,36 @@ export default function Profile() {
               </div>
 
               {/* Wishlist */}
-              <div className="border rounded-lg p-4">
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Wishlist</h4>
-                {profile.wishlist.length > 0 ? (
-                  <ul className="space-y-2">
-                    {profile.wishlist.map((item: any, index: number) => (
-                      <li key={index} className="text-sm text-gray-600">
-                        {item.name}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-gray-500">No items in wishlist</p>
-                )}
+              <div className="mt-4">
+                <h2 className="text-lg font-semibold mb-2">Wishlist</h2>
+                {Object.entries(grouped).map(([month, items]) => (
+                  <div key={month} className="mb-4 border rounded-lg">
+                    <button
+                      onClick={() => toggleGroup(month)}
+                      className="w-full px-4 py-2 text-left font-medium bg-gray-100 hover:bg-gray-200 transition"
+                    >
+                      {month} ({items.length} saved)
+                    </button>
+                    {openGroups[month] && (
+                      <div className="px-4 py-2 divide-y divide-gray-200 transition-all duration-300">
+                        {items.map((item, idx) => (
+                          <div key={idx} className="py-3">
+                            <p><strong>Food:</strong> {item.food}</p>
+                            <p><strong>Activity:</strong> {item.activity}</p>
+                            <p><strong>Place:</strong> {item.place}</p>
+                            <button
+                              onClick={() => handleDelete(item._id)}
+                              className="text-red-500 hover:text-red-700 p-1"
+                              title="Delete"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
