@@ -157,17 +157,9 @@ export default function GeneratedItinerary() {
   
   const renderStars = (rating: number) => {
     return (
-      <div className="flex items-center">
-        <span className="text-yellow-500 font-bold mr-1">{rating.toFixed(1)}</span>
-        <div className="flex">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Star
-              key={star}
-              size={16}
-              className={`${rating >= star ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
-            />
-          ))}
-        </div>
+      <div className="flex items-center text-sm text-yellow-600 font-semibold">
+        Yelp Rating {rating.toFixed(1)}
+        <Star size={16} className="ml-1 text-yellow-500 fill-yellow-500" />
       </div>
     );
   };
@@ -412,7 +404,7 @@ export default function GeneratedItinerary() {
               <div className="mt-2 text-sm flex items-center gap-2">
                     {renderStars(item.rating)}
                 {item.review_count && (
-                  <span className="text-gray-500">• {item.review_count} reviews</span>
+                  <span className="text-gray-500">• {item.review_count} Yelp reviews</span>
                 )}
               </div>
             )}

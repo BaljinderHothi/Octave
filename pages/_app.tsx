@@ -7,10 +7,12 @@ import { BadgeProvider } from '@/components/BadgeContext';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <BadgeProvider>
-      <Nav />
-      <Component {...pageProps} />
-    </BadgeProvider>
+    <div className="bg-pink-100 bg-opacity-50 min-h-screen">
+      <BadgeProvider>
+        <Nav />
+        <Component {...pageProps} />
+      </BadgeProvider>
+    </div>
   )
 }
 export default MyApp

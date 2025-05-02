@@ -104,7 +104,7 @@ export default function UserPreference() {
   const inputClass = "mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none"
   const labelClass = "block text-xl font-semibold text-gray-800"
   const boxClass = "border rounded-md p-4 bg-white shadow-sm space-y-3 w-full max-w-xs"
-  const sectionClass = "flex flex-col items-center justify-center min-h-screen bg-gray-100"
+  const sectionClass = "flex flex-col items-center justify-center min-h-screen"
 
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

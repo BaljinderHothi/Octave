@@ -126,7 +126,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex flex-col items-center justify-center min-h-screen">
       <section className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-5">Update Your Account</h1>
 

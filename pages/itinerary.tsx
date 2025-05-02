@@ -12,7 +12,7 @@ export default function Itinerary() {
   }
 
   return (
-    <section className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <section className="flex flex-col items-center justify-center min-h-screen">
       <h1 className="text-3xl font-bold mb-1">What do you have in mind?</h1>
       <p className="text-gray-500 mb-8 text-sm text-center px-4">
         Let us generate an itinerary for you based on your preferences or explore a fun random day!
