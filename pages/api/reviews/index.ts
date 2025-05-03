@@ -123,10 +123,9 @@ async function handler(
         };
         console.log('Sending data to preference API:', JSON.stringify(requestBody));
         
-        // First check if API is awake with a timeout
+        //check if API is awake with a timeout
         let apiAwake = false;
         
-        // Try to wake up the API if needed
         const wakeupApiWithRetries = async (maxRetries = 2) => {
           for (let attempt = 0; attempt < maxRetries; attempt++) {
             try {
@@ -146,7 +145,6 @@ async function handler(
               console.log(`Wake-up attempt ${attempt + 1} failed:`, e);
             }
             
-            // Wait between retries
             if (attempt < maxRetries - 1) {
               console.log('Waiting before next wake-up attempt...');
               await new Promise(resolve => setTimeout(resolve, 3000));
@@ -172,10 +170,10 @@ async function handler(
           });
         }
         
-        // If API is awake, proceed with the real request with a longer timeout
+        //proceed with the real request with a longer timeout
         console.log('Attempting fetch to:', `${preferenceApiUrl}/api/reviews/analyze`);
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000); 
         
         try {
           const response = await fetch(`${preferenceApiUrl}/api/reviews/analyze`, {
@@ -238,7 +236,7 @@ async function handler(
       } catch (apiError) {
         console.error('Error calling preference API:', apiError);
       }
-      // Final fallback to return review without analysis
+      //fallback to return review without analysis
       return res.status(201).json({
         success: true,
         data: review,
