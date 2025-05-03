@@ -64,7 +64,7 @@ export default function Nav() {
   }
 
   return (
-    <nav className="flex w-full mx-auto py-3 justify-between px-6" style={{ backgroundColor: "#003049" }}>
+    <nav className="flex w-full mx-auto py-3 justify-between px-6" style={{ backgroundColor: "#000000" }}>
       <div className="flex items-center">
         <Link href="/">
           <Soup className="w-6 h-6 text-white" />

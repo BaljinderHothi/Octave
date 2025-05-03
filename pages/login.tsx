@@ -62,13 +62,19 @@ export default function Login() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-44px)] bg-gray-100">
+    <div className="min-h-screen bg-cover bg-center bg-no-repeat flex items-center justify-center px-4"
+      style={{
+        backgroundImage: "url('/images/background6.jpg')",
+        backgroundColor: 'rgba(255,255,255,0.3)',
+        backgroundBlendMode: 'lighten',
+      }}
+    >
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <div className="flex justify-center mb-6">
           <Soup className="w-12 h-12" style={{ color: "#003049" }} />
         </div>
-        <h1 className="text-2xl font-bold text-center mb-6">Sign in to Octave</h1>
-        
+        <h1 className="text-2xl font-bold text-center mb-6">Sign in to Octave</h1>  
+
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
             {error}
@@ -91,7 +97,7 @@ export default function Login() {
               required
             />
           </div>
-          
+
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
@@ -107,7 +113,7 @@ export default function Login() {
               required
             />
           </div>
-          
+
           <div>
             <button
               type="submit"
@@ -115,27 +121,27 @@ export default function Login() {
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50"
               style={{ backgroundColor: "#000000" }}
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Signing in...' : 'Login'}
             </button>
           </div>
         </form>
-        
+
         <div className="mt-6">
           <p className="text-center text-sm text-gray-600">
             Don't have an account?{' '}
             <Link href="/signup" className="font-medium" style={{ color: "#003049" }}>
               Sign up
             </Link>
-          </p>
+          </p>         
         </div>
+
+
+        
+        <p className="mt-8 text-center text-xl text-black">
+          Continue your NYC adventure!
+        </p>
+
       </div>
-
-
-      
-      <p className="mt-8 text-center text-xl text-gray-500">
-      Continue your NYC adventure!
-      </p>
-
     </div>
   )
 }

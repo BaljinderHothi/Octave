@@ -237,7 +237,7 @@ export default function Closed() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex justify-center items-center">
+      <div className="min-h-screen flex justify-center items-center">
         <LoadingSpinner />
       </div>
     );
@@ -245,8 +245,8 @@ export default function Closed() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-100">
-        <div className="bg-white">
+      <div className="min-h-screen">
+        <div className="">
           <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
             <div className="text-center">
               <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
@@ -278,7 +278,7 @@ export default function Closed() {
           </div>
         </div>
 
-        <div className="bg-gray-100 py-12">
+        <div className="bg-white py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
               <div className="text-center">
@@ -330,7 +330,7 @@ export default function Closed() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-6 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
           <h1 className="text-3xl font-bold">{isSearchResults ? 'Search Results' : 'Your Recommendations'}</h1>

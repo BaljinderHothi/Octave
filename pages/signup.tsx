@@ -103,7 +103,7 @@ export default function Signup() {
   const selectClass = "flex-1 px-2 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none"
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex flex-col items-center justify-center min-h-screen">
       <section className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-5">Create an Account</h1>
 
