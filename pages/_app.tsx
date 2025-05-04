@@ -7,7 +7,7 @@ import { BadgeProvider } from '@/components/BadgeContext';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <div className="bg-pink-100 bg-opacity-50 min-h-screen">
+      <div className="bg-[#FAF9F6] min-h-screen">
       <BadgeProvider>
         <Nav />
         <Component {...pageProps} />
