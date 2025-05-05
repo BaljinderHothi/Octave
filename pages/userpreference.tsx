@@ -16,6 +16,9 @@ export default function UserPreference() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isNewUser, setIsNewUser] = useState(false)
   const [newBadge, setNewBadge] = useState<Badge | null>(null)
+  const [clearingCategories, setClearingCategories] = useState(false)
+  const [clearStatus, setClearStatus] = useState('')
+  const [currentImplicitCategories, setCurrentImplicitCategories] = useState<string[]>([])
 
 
   const [form, setForm] = useState({
@@ -73,7 +76,11 @@ export default function UserPreference() {
           const uniqueFood = Array.from(new Set<string>(data.data.food || []))
           const uniqueActivities = Array.from(new Set<string>(data.data.activities || []))
           const uniquePlaces = Array.from(new Set<string>(data.data.places || []))
-
+          
+          //set the current implicit categories
+          const implicitCategories = data.data.implicitCategories || []
+          setCurrentImplicitCategories(implicitCategories)
+          console.log('Current implicit categories:', implicitCategories)
 
           setForm(prev => ({
             ...prev,
@@ -155,10 +162,39 @@ export default function UserPreference() {
       //here, we're processing the tellUsMore text/"custom" attribute in mongodb
       //and extracting implicit categories from the freeform text
       if (form.tellUsMore.trim()) {
+        // First, clear any existing implicit categories
+        try {
+          console.log('Clearing existing implicit categories.');
+          setClearingCategories(true);
+          setClearStatus('Clearing previous generated preferences...');
+          const clearResponse = await fetch('/api/user/clear-implicit-categories', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (!clearResponse.ok) {
+            console.error('Failed to clear implicit categories');
+            const clearData = await clearResponse.json();
+            console.error('Clear categories error:', clearData);
+            setClearStatus('Failed to clear previous generated preferences');
+          } else {
+            console.log('Implicit categories cleared successfully');
+            setClearStatus('Previous generated preferences cleared successfully');
+          }
+        } catch (clearError) {
+          console.error('Error clearing implicit categories:', clearError);
+          setClearStatus('Error clearing previous generated preferences');
+        } finally {
+          setClearingCategories(false);
+        }
+
+        //process the new text to extract new implicit categories
         console.log('Sending request to process preferences:', {
           userId: verifiedUserId,
           text: form.tellUsMore
-        })
+        });
 
         //call endpoint to process the text
         const processResponse = await fetch('https://octavefinalhybrid.onrender.com/api/process-preferences', {
@@ -381,7 +417,30 @@ export default function UserPreference() {
             className={inputClass} 
             placeholder="Tell us anything else you'd like us to know about you" 
           />
-
+          
+          {clearStatus && (
+            <div className={`mt-2 text-xs ${clearStatus.includes('Failed') || clearStatus.includes('Error') ? 'text-red-600' : 'text-blue-600'}`}>
+              {clearStatus}
+            </div>
+          )}
+          
+          {currentImplicitCategories.length > 0 && (
+            <div className="mt-3">
+              <p className="text-sm font-medium text-gray-700">Current detected preferences (will be reset):</p>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {currentImplicitCategories.map((category, index) => (
+                  <span key={index} className="px-2 py-1 text-xs bg-gray-100 rounded-full">
+                    {category}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          <div className="mt-2 text-xs text-gray-500">
+            <p className="font-semibold">Note:</p>
+            <p>When you submit this form with text in this field, we'll reset your detected preferences and generate new ones based on your text.</p>
+          </div>
         </div>
       </div>
 

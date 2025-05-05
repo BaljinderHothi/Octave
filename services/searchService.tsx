@@ -43,11 +43,25 @@ export async function searchRecommendations(query: string, userId?: string): Pro
       return [];
     }
 
-    return data.map((rec: any) => {
+    return await Promise.all(data.map(async (rec: any) => {
       const formattedCategories = rec.category_text ? 
         rec.category_text.split(' ')
           .map((cat: string) => cat.charAt(0).toUpperCase() + cat.slice(1)) : 
         [];
+
+      //get the image_url
+      let imageUrl = '/placeholder-restaurant.jpg';
+      try {
+        const response = await fetch(`/api/businesses/${rec.id}`);
+        if (response.ok) {
+          const businessData = await response.json();
+          if (businessData.success && businessData.data.image_url) {
+            imageUrl = businessData.data.image_url;
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching business details:', error);
+      }
         
       return {
         id: rec.id || '',
@@ -55,7 +69,7 @@ export async function searchRecommendations(query: string, userId?: string): Pro
         categories: formattedCategories,
         rating: typeof rec.rating === 'number' ? rec.rating : 0,
         location: 'New York',
-        image_url: '/placeholder-restaurant.jpg',
+        image_url: imageUrl,
         category_match: rec.category_text || 'Other',
         explanation: `${rec.note ? `${rec.note}\n` : ''}${
           formattedCategories.join(', ')
@@ -64,7 +78,7 @@ export async function searchRecommendations(query: string, userId?: string): Pro
         }`,
         score: typeof rec.score === 'number' ? rec.score : (rec.score === null ? 0 : 0)
       };
-    });
+    }));
   } catch (error) {
     console.error('Search error:', error);
     throw error;

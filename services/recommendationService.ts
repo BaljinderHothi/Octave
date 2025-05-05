@@ -12,6 +12,7 @@ interface UserPreferences {
   activities?: string[];
   places?: string[];
   custom?: string[];
+  implicitCategories?: string[];
 }
 
 export async function getRecommendations(userId: string, preferences?: string[] | UserPreferences): Promise<Recommendation[]> {
@@ -42,6 +43,7 @@ export async function getRecommendations(userId: string, preferences?: string[] 
     }
     
     let combinedPreferences: string[] = [];
+    let implicitCategories: string[] = [];
     
     //preferences is an object (UserPreferences) -> combine all categories
     if (preferences && !Array.isArray(preferences)) {
@@ -54,10 +56,35 @@ export async function getRecommendations(userId: string, preferences?: string[] 
       combinedPreferences = preferences;
     }
 
+    //fetch implicit categories from user profile
+    try {
+      const response = await fetch('/api/user/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        if (userData.data?.preferences?.implicitCategories && 
+            Array.isArray(userData.data.preferences.implicitCategories)) {
+          implicitCategories = userData.data.preferences.implicitCategories;
+          console.log('Fetched implicit categories:', implicitCategories);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching implicit categories:', error);
+    }
+
+    //combine explicit preferences with implicit categories
+    combinedPreferences = Array.from(new Set([...combinedPreferences, ...implicitCategories]));
+
     console.log('=== RECOMMENDATION REQUEST DEBUG ===');
     console.log('Request Parameters:', {
       userId,
-      preferences: combinedPreferences,
+      explicitPreferences: preferences,
+      implicitCategories,
+      combinedPreferences,
       hasToken: !!token,
       apiUrl: RENDER_API_URL
     });
@@ -113,21 +140,85 @@ export async function getRecommendations(userId: string, preferences?: string[] 
       Array.from(new Set(recommendations.map((rec: any) => rec.matched_category || 'Unknown')))
     );
     
+    //make separate calls for each implicit category
+    let implicitRecommendations: any[] = [];
+    if (implicitCategories.length > 0) {      
+      for (const category of implicitCategories) {
+        try {
+          const implicitResponse = await fetch(`${RENDER_API_URL}/search`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/json'
+            },
+            credentials: 'omit',
+            mode: 'cors',
+            body: JSON.stringify({
+              searchName: category
+            })
+          });
+          
+          if (implicitResponse.ok) {
+            const implicitData = await implicitResponse.json();
+            if (Array.isArray(implicitData) && implicitData.length > 0) {
+              const processedImplicitData = implicitData.map((item: any) => ({
+                ...item,
+                matched_category: category,
+                from_implicit: true
+              }));
+              
+              //top 6 results for each implicit category
+              implicitRecommendations.push(...processedImplicitData.slice(0, 6));
+              console.log(`Added ${Math.min(6, processedImplicitData.length)} recommendations for implicit category: ${category}`);
+            }
+          }
+        } catch (err) {
+          console.error(`Error fetching recommendations for implicit category ${category}:`, err);
+        }
+      }
+    }
+    
+    //combine regular and implicit recommendations
+    const allRecommendations = [...recommendations, ...implicitRecommendations];
+    console.log('Total recommendations after including implicit categories:', allRecommendations.length);
+    
     //MAKE SURE each recommendation has the required fields
-    const formattedRecommendations = recommendations.map((rec: any): Recommendation => ({
-      id: rec.id || '',
-      name: rec.name || 'Unknown Business',
-      categories: rec.category_text ? [rec.category_text] : [],
-      rating: typeof rec.rating === 'number' ? rec.rating : 0,
-      location: rec.location?.address1 ? 
-        `${rec.location.address1}, ${rec.location.city || 'New York'}, ${rec.location.state || 'NY'}` : 
-        'New York',
-      image_url: rec.image_url || '/placeholder-restaurant.jpg',
-      category_match: rec.matched_category || 'Other',
-      explanation: `Recommended ${rec.matched_category} restaurant with ${rec.rating}★ rating and ${rec.review_count} reviews\n\nRecommendation score: ${
-        rec.score ? `${(rec.score * 100).toFixed(1)}%` : 'N/A'
-      }`,
-      score: typeof rec.score === 'number' ? rec.score : 0
+    const formattedRecommendations = await Promise.all(allRecommendations.map(async (rec: any): Promise<Recommendation> => {
+      //get the image_url
+      let imageUrl = rec.image_url || '/placeholder-restaurant.jpg';
+      try {
+        const response = await fetch(`/api/businesses/${rec.id}`);
+        if (response.ok) {
+          const businessData = await response.json();
+          if (businessData.success && businessData.data.image_url) {
+            imageUrl = businessData.data.image_url;
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching business details:', error);
+      }
+
+      return {
+        id: rec.id || '',
+        name: rec.name || 'Unknown Business',
+        categories: rec.category_text ? [rec.category_text] : [],
+        rating: typeof rec.rating === 'number' ? rec.rating : 0,
+        location: rec.location?.address1 ? 
+          `${rec.location.address1}, ${rec.location.city || 'New York'}, ${rec.location.state || 'NY'}` : 
+          'New York',
+        image_url: imageUrl,
+        category_match: rec.matched_category || 'Other',
+        explanation: rec.from_implicit 
+          ? `Based on your detected interest in ${rec.matched_category}\n\n${rec.rating}★ rating with ${rec.review_count || 0} reviews\n\nRecommendation score: ${
+              rec.score ? `${(rec.score * 100).toFixed(1)}%` : 'N/A'
+            }`
+          : `Recommended ${rec.matched_category} restaurant with ${rec.rating}★ rating and ${rec.review_count || 0} reviews\n\nRecommendation score: ${
+              rec.score ? `${(rec.score * 100).toFixed(1)}%` : 'N/A'
+            }`,
+        score: typeof rec.score === 'number' ? rec.score : 0,
+        from_implicit: !!rec.from_implicit
+      };
     }));
 
     //sort recommendations by score in descending order
