@@ -42,6 +42,21 @@ export default function UserPreference() {
       }
 
       try {
+        //verify the current user and update localStorage
+        const userResponse = await fetch('/api/user/current', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        
+        if (userResponse.ok) {
+          const userData = await userResponse.json()
+          const currentUserId = userData.user._id
+          //update localStorage with verified user ID
+          localStorage.setItem('userId', currentUserId)
+        } else {
+          throw new Error('Failed to verify user identity')
+        }
 
         const response = await fetch('/api/user/preferences', {
           headers: {
@@ -122,12 +137,59 @@ export default function UserPreference() {
         throw new Error('No authentication token found')
       }
 
+      //verify current user ID before proceeding
+      const userResponse = await fetch('/api/user/current', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (!userResponse.ok) {
+        throw new Error('Failed to verify user identity')
+      }
+      
+      const userData = await userResponse.json()
+      const verifiedUserId = userData.user._id
+      localStorage.setItem('userId', verifiedUserId)
+
+      //here, we're processing the tellUsMore text/"custom" attribute in mongodb
+      //and extracting implicit categories from the freeform text
+      if (form.tellUsMore.trim()) {
+        console.log('Sending request to process preferences:', {
+          userId: verifiedUserId,
+          text: form.tellUsMore
+        })
+
+        //call endpoint to process the text
+        const processResponse = await fetch('https://octavefinalhybrid.onrender.com/api/process-preferences', {
+        // const processResponse = await fetch('http://127.0.0.1:5000/api/process-preferences', { 
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            userId: verifiedUserId,
+            text: form.tellUsMore
+          })
+        })
+
+        if (!processResponse.ok) {
+          const data = await processResponse.json()
+          console.error('Process preferences error:', data)
+          throw new Error(data.message || 'Failed to process text preferences')
+        }
+
+        const processData = await processResponse.json()
+        console.log('Process preferences response:', processData)
+      }
 
       //make sure no duplicates happen when combining the checklist and custom preferences
       const uniqueFood = Array.from(new Set<string>([...form.food, ...form.otherFoodList]))
       const uniqueActivities = Array.from(new Set<string>([...form.activity, ...form.otherActivityList]))
       const uniquePlaces = Array.from(new Set<string>([...form.places, ...form.otherPlacesList]))
-
 
       const response = await fetch('/api/user/preferences', {
         method: 'PUT',
@@ -156,7 +218,6 @@ export default function UserPreference() {
 
       alert('Preferences saved successfully!')
       
-
       router.push('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save preferences')

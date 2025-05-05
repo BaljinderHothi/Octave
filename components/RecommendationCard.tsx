@@ -25,7 +25,7 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
       <div className="p-4">
         <h3 className="text-lg font-semibold mb-2">{recommendation.name}</h3>
         <p className="text-sm text-gray-600 mb-2">
-          {recommendation.categories.slice(0, 2).join(', ')}
+          Categories: {recommendation.categories.join(', ')}
         </p>
         <p className="text-sm text-gray-500 mb-2">
           {recommendation.location}
@@ -34,7 +34,7 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
           <span className="text-yellow-400">★</span>
           <span className="ml-1 text-sm">{recommendation.rating.toFixed(1)}</span>
         </div>
-        <p className="text-sm text-gray-700 italic mb-2">
+        <p className="text-sm text-gray-700 mb-2 whitespace-pre-line">
           {recommendation.explanation}
         </p>
         <button 

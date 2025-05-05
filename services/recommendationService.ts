@@ -3,8 +3,9 @@
 
 import { Recommendation, RecommendationResponse } from '../types/Recommendation';
 
-const RENDER_API_URL = 'https://octavemodel.onrender.com';
-// const RENDER_API_URL = 'http://127.0.0.1:5001';
+// const RENDER_API_URL = 'https://octavemodel.onrender.com';
+// const RENDER_API_URL = 'http://127.0.0.1:5000'; //this is the local new model
+const RENDER_API_URL = 'https://octavefinalhybrid.onrender.com';
 
 interface UserPreferences {
   food?: string[];
@@ -62,18 +63,18 @@ export async function getRecommendations(userId: string, preferences?: string[] 
     });
 
     const requestBody = {
-      user_id: userId,
-      preferences: combinedPreferences,
-      top_n: 6
+      userId: userId,
+      preferences: combinedPreferences
     };
     
     console.log('Request Body:', JSON.stringify(requestBody, null, 2));
 
-    const response = await fetch(`${RENDER_API_URL}/api/recommendations`, {
+    const response = await fetch(`${RENDER_API_URL}/recommend`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
       },
       credentials: 'omit',
       mode: 'cors',
@@ -100,33 +101,30 @@ export async function getRecommendations(userId: string, preferences?: string[] 
     console.log('=== RECOMMENDATION RESPONSE DEBUG ===');
     console.log('Raw API response:', JSON.stringify(data, null, 2));
     
-    if (!data || typeof data !== 'object') {
+    if (!data || !Array.isArray(data)) {
       console.error('API returned invalid data format');
       throw new Error('Invalid data format from recommendations API');
     }
     
-    if (data.success === false) {
-      console.error('API returned error:', data.message);
-      throw new Error(data.message || 'Failed to get recommendations');
-    }
-    
-    const recommendations = Array.isArray(data.data) ? data.data : [];
+    const recommendations = data;
     
     console.log('Number of recommendations:', recommendations.length);
     console.log('Categories shown:', 
-      Array.from(new Set(recommendations.map((rec: any) => rec.category_match || 'Unknown')))
+      Array.from(new Set(recommendations.map((rec: any) => rec.matched_category || 'Unknown')))
     );
     
     //MAKE SURE each recommendation has the required fields
     const formattedRecommendations = recommendations.map((rec: any): Recommendation => ({
       id: rec.id || '',
       name: rec.name || 'Unknown Business',
-      categories: Array.isArray(rec.categories) ? rec.categories : [],
+      categories: rec.category_text ? [rec.category_text] : [],
       rating: typeof rec.rating === 'number' ? rec.rating : 0,
-      location: rec.location || '',
+      location: rec.location?.address1 ? 
+        `${rec.location.address1}, ${rec.location.city || 'New York'}, ${rec.location.state || 'NY'}` : 
+        'New York',
       image_url: rec.image_url || '/placeholder-restaurant.jpg',
-      category_match: rec.category_match || 'Other',
-      explanation: rec.explanation || `Recommended business with ${rec.rating || 0}★ rating`,
+      category_match: rec.matched_category || 'Other',
+      explanation: `Recommended ${rec.matched_category} restaurant with ${rec.rating}★ rating and ${rec.review_count} reviews`,
       score: typeof rec.score === 'number' ? rec.score : 0
     }));
 
@@ -147,6 +145,13 @@ export async function getHealthCheck(): Promise<boolean> {
       console.log(`Health check attempt ${attempt + 1}/${maxRetries + 1}...`);
       
       const response = await fetch(`${RENDER_API_URL}/api/health`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        mode: 'cors',
+        credentials: 'omit',
         signal: AbortSignal.timeout(5000), 
       });
       
