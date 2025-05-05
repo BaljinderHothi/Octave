@@ -124,11 +124,14 @@ export async function getRecommendations(userId: string, preferences?: string[] 
         'New York',
       image_url: rec.image_url || '/placeholder-restaurant.jpg',
       category_match: rec.matched_category || 'Other',
-      explanation: `Recommended ${rec.matched_category} restaurant with ${rec.rating}★ rating and ${rec.review_count} reviews`,
+      explanation: `Recommended ${rec.matched_category} restaurant with ${rec.rating}★ rating and ${rec.review_count} reviews\n\nRecommendation score: ${
+        rec.score ? `${(rec.score * 100).toFixed(1)}%` : 'N/A'
+      }`,
       score: typeof rec.score === 'number' ? rec.score : 0
     }));
 
-    return formattedRecommendations;
+    //sort recommendations by score in descending order
+    return formattedRecommendations.sort((a, b) => (b.score || 0) - (a.score || 0));
   } catch (error) {
     console.error('Error in getRecommendations:', error);
     return generateFallbackRecommendations(preferences);
