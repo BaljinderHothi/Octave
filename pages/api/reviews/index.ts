@@ -244,14 +244,14 @@ async function handler(
             console.error('Error from preference API:', errorText);
           }
         } catch (fetchError) {
-          clearTimeout(timeoutId); // Ensure timeout is cleared
+          clearTimeout(timeoutId); 
           console.error('Fetch error for review analysis:', fetchError);
         }
       } catch (apiError) {
         console.error('Error calling preference API:', apiError);
       }
 
-      // Final fallback to return review without analysis
+      //final fallback to return review without analysis
       return res.status(201).json({
         success: true,
         data: review,
