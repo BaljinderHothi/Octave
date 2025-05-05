@@ -1,7 +1,6 @@
 //API endpoint for fetching reviews in general
 //GET = fetch reviews
 //POST = create review  
-
 import { NextApiRequest, NextApiResponse } from 'next';
 import { withAuth, AuthenticatedRequest } from '@/lib/auth';
 import dbConnect from '@/lib/mongoose';
@@ -12,38 +11,31 @@ async function handler(
   res: NextApiResponse
 ) {
   await dbConnect();
-
   // fetch reviews
   if (req.method === 'GET') {
     try {
       const { businessId, userId, limit = 10, page = 1 } = req.query;
       const query: any = {};
-
       if (businessId) {
         query.businessId = businessId;
       }
-
       if (userId) {
         query.user = userId;
       }
-
       if (!businessId && !userId) {
         query.isPublic = true;
       } else if (userId && userId !== req.user._id.toString()) {
         query.isPublic = true;
       }
-
       const pageNum = parseInt(page as string) || 1;
       const limitNum = parseInt(limit as string) || 10;
       const skip = (pageNum - 1) * limitNum;
-
       const reviews = await Review.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limitNum)
         .populate('user', 'firstName lastName username profilePicture')
         .lean();
-
       const total = await Review.countDocuments(query);
       
       if (userId && userId === req.user._id.toString()) {
@@ -52,7 +44,6 @@ async function handler(
           await req.user.updateOne({ $set: { reviewCount: actualReviewCount } });
         }
       }
-
       return res.status(200).json({
         success: true,
         data: reviews,
@@ -72,24 +63,20 @@ async function handler(
       });
     }
   }
-
   // create a new review
   if (req.method === 'POST') {
     try {
       const { businessId, businessName, rating, text, images, isPublic } = req.body;
-
       if (!businessId || !businessName || !rating || !text) {
         return res.status(400).json({
           success: false,
           message: 'Missing required fields'
         });
       }
-
       const existingReview = await Review.findOne({
         user: req.user._id,
         businessId
       });
-
       if (existingReview) {
         return res.status(400).json({
           success: false,
@@ -97,7 +84,6 @@ async function handler(
           reviewId: existingReview._id
         });
       }
-
       const review = await Review.create({
         user: req.user._id,
         businessId,
@@ -114,13 +100,11 @@ async function handler(
       } else {
         await req.user.updateOne({ $inc: { reviewCount: 1 } });
       }
-
       //4/30/25 - whenever we submit a new review, we'll make the sentiment analysis model
       //read the rating and text, then put those additionalPreferences into the database
       try {
         // const preferenceApiUrl = "http://127.0.0.1:5005";
         const preferenceApiUrl = "https://octavesentimentanalysis.onrender.com";
-
   
         console.log('Calling preference API at:', preferenceApiUrl);
         
@@ -138,13 +122,16 @@ async function handler(
           text
         };
         console.log('Sending data to preference API:', JSON.stringify(requestBody));
+        
+        //check if API is awake with a timeout
         let apiAwake = false;
+        
         const wakeupApiWithRetries = async (maxRetries = 2) => {
           for (let attempt = 0; attempt < maxRetries; attempt++) {
             try {
               console.log(`API wake-up attempt ${attempt + 1}/${maxRetries}...`);
               const testResponse = await fetch(`${preferenceApiUrl}/api/test`, {
-                signal: AbortSignal.timeout(5000) 
+                signal: AbortSignal.timeout(5000) // 5 second timeout
               });
               
               if (testResponse.ok) {
@@ -183,7 +170,7 @@ async function handler(
           });
         }
         
-        //api is awake -> proceed with the real request with a longer timeout
+        //proceed with the real request with a longer timeout
         console.log('Attempting fetch to:', `${preferenceApiUrl}/api/reviews/analyze`);
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); 
@@ -197,8 +184,7 @@ async function handler(
             body: JSON.stringify(requestBody),
             signal: controller.signal
           });
-
-          clearTimeout(timeoutId); 
+          clearTimeout(timeoutId); // Clear the timeout
           console.log('Preference API response status:', response.status);
           
           if (response.ok) {
@@ -216,7 +202,7 @@ async function handler(
                   body: JSON.stringify({ 
                     categories: analysisResult.categories || ['direct-update-test'] 
                   }),
-                  signal: AbortSignal.timeout(8000) 
+                  signal: AbortSignal.timeout(8000) // 8 second timeout
                 });
                 
                 console.log('Direct update response status:', directUpdateResponse.status);
@@ -250,8 +236,7 @@ async function handler(
       } catch (apiError) {
         console.error('Error calling preference API:', apiError);
       }
-
-      // Final fallback to return review without analysis
+      //fallback to return review without analysis
       return res.status(201).json({
         success: true,
         data: review,
@@ -271,11 +256,9 @@ async function handler(
       });
     }
   }
-
   return res.status(405).json({
     success: false,
     message: 'Method not allowed'
   });
 }
-
-export default withAuth(handler); 
+export default withAuth(handler);
