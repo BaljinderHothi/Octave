@@ -10,6 +10,7 @@ export interface Recommendation {
   explanation: string;
   score?: number;
   from_implicit?: boolean;
+  from_additional?: boolean;
 }
 
 //structure of api response when fetching recommendations

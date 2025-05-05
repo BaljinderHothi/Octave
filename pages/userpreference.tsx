@@ -198,7 +198,9 @@ export default function UserPreference() {
 
         //call endpoint to process the text
         const processResponse = await fetch('https://octavefinalhybrid.onrender.com/api/process-preferences', {
-        // const processResponse = await fetch('http://127.0.0.1:5000/api/process-preferences', { 
+        // const processResponse = await fetch('http://127.0.0.1:5001/api/process-preferences', { 
+        // const processResponse = await fetch('https://api.cortex.cerebrium.ai/v4/p-f68c4a50/my-first-project/process_preferences', {
+
           method: 'POST',
           mode: 'cors',
           credentials: 'same-origin',

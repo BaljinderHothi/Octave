@@ -26,6 +26,7 @@ export default function Closed() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userPreferences, setUserPreferences] = useState<string[]>([]);
   const [implicitCategories, setImplicitCategories] = useState<string[]>([]);
+  const [additionalPreferences, setAdditionalPreferences] = useState<string[]>([]);
   const [isSearchResults, setIsSearchResults] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState<{ [key: string]: number }>({});
@@ -160,22 +161,27 @@ export default function Closed() {
         ];
         
         const implicitCategories = preferences?.implicitCategories || [];
+        const additionalPrefs = preferences?.additionalPreferences || [];
         console.log('Implicit categories:', implicitCategories);
-        console.log('Combined preferences:', [...allPreferences, ...implicitCategories]);
+        console.log('Additional preferences:', additionalPrefs);
+        console.log('Combined preferences:', [...allPreferences, ...implicitCategories, ...additionalPrefs]);
         
-        setUserPreferences([...allPreferences, ...implicitCategories]);
+        setUserPreferences([...allPreferences, ...implicitCategories, ...additionalPrefs]);
         setImplicitCategories(implicitCategories);
+        setAdditionalPreferences(additionalPrefs);
 
         const userId = localStorage.getItem('userId');
         if (userId) {
           console.log('Fetching recommendations with preferences:', allPreferences);
           console.log('Including implicit categories:', implicitCategories);
+          console.log('Including additional preferences:', additionalPrefs);
           const recs = await getRecommendations(userId, {
             food: preferences?.food || [],
             activities: preferences?.activities || [],
             places: preferences?.places || [],
             custom: preferences?.custom || [],
-            implicitCategories: implicitCategories
+            implicitCategories: implicitCategories,
+            additionalPreferences: additionalPrefs
           });
           
           if (!recs || recs.length === 0) {
@@ -274,7 +280,8 @@ export default function Closed() {
         activities: userPreferences.filter(p => p.startsWith('activity:')),
         places: userPreferences.filter(p => p.startsWith('place:')),
         custom: userPreferences.filter(p => !p.includes(':')),
-        implicitCategories: implicitCategories
+        implicitCategories: implicitCategories,
+        additionalPreferences: additionalPreferences
       }).then(recs => {
         setRecommendations(recs);
         setLoading(false);
@@ -394,15 +401,27 @@ export default function Closed() {
       return result;
     }, {});
 
-  //explicit preferences recommendations (exclude implicit categories to avoid duplication)
-  const explicitCategoryRecommendations = Object.entries(groupedRecommendations)
-    .filter(([category]) => !Object.keys(implicitCategoryRecommendations).includes(category) || 
-                          recommendations.some(rec => rec.category_match === category && !rec.from_implicit))
+  //additional preferences recommendations
+  const additionalPreferenceRecommendations = Object.entries(groupedRecommendations)
+    .filter(([category]) => recommendations.some(rec => rec.category_match === category && rec.from_additional))
     .reduce((result: { [key: string]: Recommendation[] }, [category, recs]) => {
-      if (!Object.keys(implicitCategoryRecommendations).includes(category)) {
+      result[category] = recs.filter(rec => rec.from_additional);
+      return result;
+    }, {});
+
+  //explicit preferences recommendations (exclude implicit categories and additional preferences to avoid duplication)
+  const explicitCategoryRecommendations = Object.entries(groupedRecommendations)
+    .filter(([category]) => 
+      (!Object.keys(implicitCategoryRecommendations).includes(category) && 
+       !Object.keys(additionalPreferenceRecommendations).includes(category)) || 
+      recommendations.some(rec => rec.category_match === category && !rec.from_implicit && !rec.from_additional)
+    )
+    .reduce((result: { [key: string]: Recommendation[] }, [category, recs]) => {
+      if (!Object.keys(implicitCategoryRecommendations).includes(category) && 
+          !Object.keys(additionalPreferenceRecommendations).includes(category)) {
         result[category] = recs;
       } else {
-        result[category] = recs.filter(rec => !rec.from_implicit);
+        result[category] = recs.filter(rec => !rec.from_implicit && !rec.from_additional);
       }
       return result;
     }, {});
@@ -520,8 +539,72 @@ export default function Closed() {
           </div>
         ) : (
           <div className="space-y-12">
+
+{/* Additional preferences recommendations */}
+            {Object.keys(additionalPreferenceRecommendations).length > 0 && (
+              <>
+                {Object.entries(additionalPreferenceRecommendations).map(([category, recs]) => {
+                  const pageIndex = currentPage[category] || 0;
+                  const itemsPerPage = isSearchResults ? 4 : 3;
+                  const totalPages = Math.ceil(recs.length / itemsPerPage);
+                  const displayedRecs = recs.slice(pageIndex * itemsPerPage, pageIndex * itemsPerPage + itemsPerPage);
+
+                  return (
+                    <div key={category} className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <h2 className="text-2xl font-semibold text-gray-800">
+                            {`Because you loved ${category}...`}
+                          </h2>
+                          {!isSearchResults && (
+                            <div className="ml-2 bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                              Based on your recent positive reviews
+                            </div>
+                          )}
+                        </div>
+                        {totalPages > 1 && (
+                          <div className="flex items-center gap-4">
+                            <button
+                              onClick={() => handlePrevPage(category)}
+                              disabled={pageIndex === 0}
+                              className={`p-2 rounded-full ${
+                                pageIndex === 0 
+                                  ? 'text-gray-400 cursor-not-allowed' 
+                                  : 'text-gray-600 hover:bg-gray-200'
+                              }`}
+                            >
+                              <ChevronLeft className="h-6 w-6" />
+                            </button>
+                            <span className="text-sm text-gray-600">
+                              {pageIndex + 1} of {totalPages}
+                            </span>
+                            <button
+                              onClick={() => handleNextPage(category)}
+                              disabled={pageIndex >= totalPages - 1}
+                              className={`p-2 rounded-full ${
+                                pageIndex >= totalPages - 1
+                                  ? 'text-gray-400 cursor-not-allowed' 
+                                  : 'text-gray-600 hover:bg-gray-200'
+                              }`}
+                            >
+                              <ChevronRight className="h-6 w-6" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <div className={`grid ${isSearchResults ? 'grid-cols-1 md:grid-cols-4 gap-4' : 'grid-cols-1 md:grid-cols-3 gap-6'}`}>
+                        {displayedRecs.map((rec) => (
+                          <RecommendationCard key={rec.id} recommendation={rec} />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            )}
+
 {/* Explicit/checkbox preferences recs */}
-            {Object.keys(explicitCategoryRecommendations).length > 0 && (
+{Object.keys(explicitCategoryRecommendations).length > 0 && (
               <>
                 {Object.entries(explicitCategoryRecommendations).map(([category, recs]) => {
                   const pageIndex = currentPage[category] || 0;
@@ -649,6 +732,8 @@ export default function Closed() {
             )}
           </div>
         )}
+        
+
 
         {apiStatus !== 'connected' && (
           <div className="w-full px-4 py-3 mb-6 rounded-lg bg-amber-50 border border-amber-200">
