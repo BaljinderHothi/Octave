@@ -4,8 +4,8 @@
 import { Recommendation, RecommendationResponse } from '../types/Recommendation';
 
 // const RENDER_API_URL = 'https://api.cortex.cerebrium.ai/v4/p-f68c4a50/my-first-project';
-// const RENDER_API_URL = 'http://127.0.0.1:5001'; //this is the local new model
-const RENDER_API_URL = 'https://octavefinalhybrid.onrender.com';
+const RENDER_API_URL = 'http://127.0.0.1:5001'; //this is the local new model
+// const RENDER_API_URL = 'https://octavefinalhybrid.onrender.com';
 
 interface UserPreferences {
   food?: string[];
@@ -337,6 +337,8 @@ export async function getHealthCheck(): Promise<boolean> {
       console.log(`Health check attempt ${attempt + 1}/${maxRetries + 1}...`);
       
       const response = await fetch(`${RENDER_API_URL}/api/health`, {
+        // const response = await fetch('/api/health', {
+
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

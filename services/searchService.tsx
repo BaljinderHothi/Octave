@@ -1,8 +1,8 @@
 import { Recommendation } from '../types/Recommendation';
 
 // const API_BASE_URL = 'https://api.cortex.cerebrium.ai/v4/p-f68c4a50/my-first-project';
-// const API_BASE_URL = 'http://127.0.0.1:5001';
-const API_BASE_URL = 'https://octavefinalhybrid.onrender.com';
+const API_BASE_URL = 'http://127.0.0.1:5001';
+// const API_BASE_URL = 'https://octavefinalhybrid.onrender.com';
 
 
 export async function searchRecommendations(query: string, userId?: string): Promise<Recommendation[]> {
