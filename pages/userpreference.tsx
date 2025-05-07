@@ -31,6 +31,8 @@ export default function UserPreference() {
     tellUsMore: ''
   })
 
+const RENDER_API_URL = 'https://octavemodel.onrender.com';
+// const RENDER_API_URL = 'http://127.0.0.1:5001';
 
  
   useEffect(() => {
@@ -122,7 +124,6 @@ export default function UserPreference() {
         throw new Error('No authentication token found')
       }
 
-
       //make sure no duplicates happen when combining the checklist and custom preferences
       const uniqueFood = Array.from(new Set<string>([...form.food, ...form.otherFoodList]))
       const uniqueActivities = Array.from(new Set<string>([...form.activity, ...form.otherActivityList]))
@@ -142,10 +143,37 @@ export default function UserPreference() {
           custom: form.tellUsMore ? [form.tellUsMore] : []
         })
       })
-
       const data = await response.json()
 
-      if (!response.ok) {
+      // // if (!response.ok) {
+      // //   throw new Error(data.message || 'Failed to save preferences')
+      // // }
+      // //give the form body to the flask api to actually do extraction
+    
+
+      // if (response.ok && form.tellUsMore) {
+      //   // const flaskResponse = await fetch('http://127.0.0.1:5001/api/infer-categories', {
+      //   const flaskResponse = await fetch(`${RENDER_API_URL}/api/infer-categories`, {
+      //     method: 'POST',
+      //     headers: { 'Content-Type': 'application/json' },
+      //     body: JSON.stringify({ text: form.tellUsMore })
+      //   })
+      
+      //   const flaskData = await flaskResponse.json()
+      // //server side next js stuff to update on mongodb
+      //   if (flaskResponse.ok && flaskData.categories) {
+      //     await fetch('/api/user/implicit-categories', {
+      //       method: 'POST',
+      //       headers: {
+      //         'Content-Type': 'application/json',
+      //         'Authorization': `Bearer ${token}`
+      //       },
+      //       body: JSON.stringify({ implicitCategories: flaskData.categories })
+      //     })
+      //   }
+      // }
+
+      else {
         throw new Error(data.message || 'Failed to save preferences')
       }
 

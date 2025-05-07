@@ -17,28 +17,28 @@ export async function getRecommendations(userId: string, preferences?: string[] 
   const token = localStorage.getItem('token');
   
   try {
-    //api health check
-    const isHealthy = await getHealthCheck();
-    if (!isHealthy) {
-      console.error('Recommendation API is not healthy!!!!');
-      //direct API test as a last resort
-      const isConnected = await checkApiConnectivity();
-      if (isConnected) {
-        console.log('API connectivity test passed but failed health check.');
-      } else {
-        console.error('API connectivity test ALSO failed. Waking up the service:');
+    // api health check
+    // const isHealthy = await getHealthCheck();
+    // if (!isHealthy) {
+    //   console.error('Recommendation API is not healthy!!!!');
+    //   //direct API test as a last resort
+    //   const isConnected = await checkApiConnectivity();
+    //   if (isConnected) {
+    //     console.log('API connectivity test passed but failed health check.');
+    //   } else {
+    //     console.error('API connectivity test ALSO failed. Waking up the service:');
         
-        const wakeupSuccessful = await wakeupRenderService();
+    //     const wakeupSuccessful = await wakeupRenderService();
         
-        if (wakeupSuccessful) {
-          console.log('Wake-up attempt was partially successful, service might need more time to fully initialize.');
-        } else {
-          console.error('Wake-up attempt failed, unable to connect to recommendation service.');
-        }
+    //     if (wakeupSuccessful) {
+    //       console.log('Wake-up attempt was partially successful, service might need more time to fully initialize.');
+    //     } else {
+    //       console.error('Wake-up attempt failed, unable to connect to recommendation service.');
+    //     }
         
-        return generateFallbackRecommendations(preferences);
-      }
-    }
+    //     return generateFallbackRecommendations(preferences);
+    //   }
+    // }
     
     let combinedPreferences: string[] = [];
     
@@ -311,50 +311,50 @@ function generateFallbackRecommendations(preferences?: string[] | UserPreference
   }));
 }
 
-/**
- * Function to up a sleeping Render url
- * makes multiple requests to the API to help wake it up
- */
-export async function wakeupRenderService(): Promise<boolean> {
-  console.log('Attempting to wake up Render service...');
+// /**
+//  * Function to up a sleeping Render url
+//  * makes multiple requests to the API to help wake it up
+//  */
+// export async function wakeupRenderService(): Promise<boolean> {
+//   console.log('Attempting to wake up Render service...');
   
-  const endpoints = [
-    '/api/test',
-    '/api/health',
-    '/api/cors-test'
-  ];
+//   const endpoints = [
+//     '/api/test',
+//     '/api/health',
+//     '/api/cors-test'
+//   ];
   
-  let success = false;
+//   let success = false;
   
-  for (const endpoint of endpoints) {
-    try {
-      console.log(`Sending wake-up request to ${endpoint}...`);
-      const response = await fetch(`${RENDER_API_URL}${endpoint}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        signal: AbortSignal.timeout(8000) 
-      });
+//   for (const endpoint of endpoints) {
+//     try {
+//       console.log(`Sending wake-up request to ${endpoint}...`);
+//       const response = await fetch(`${RENDER_API_URL}${endpoint}`, {
+//         method: 'GET',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//         signal: AbortSignal.timeout(8000) 
+//       });
       
-      if (response.ok) {
-        console.log(`Wake-up request to ${endpoint} succeeded!`);
-        success = true;
-      } else {
-        console.log(`Wake-up request to ${endpoint} failed with status: ${response.status}`);
-      }
-    } catch (error) {
-      console.log(`Wake-up request to ${endpoint} failed with error: ${error}`);
-    }
+//       if (response.ok) {
+//         console.log(`Wake-up request to ${endpoint} succeeded!`);
+//         success = true;
+//       } else {
+//         console.log(`Wake-up request to ${endpoint} failed with status: ${response.status}`);
+//       }
+//     } catch (error) {
+//       console.log(`Wake-up request to ${endpoint} failed with error: ${error}`);
+//     }
     
-    await new Promise(resolve => setTimeout(resolve, 500));
-  }
+//     await new Promise(resolve => setTimeout(resolve, 500));
+//   }
   
-  if (success) {
-    console.log('Successfully sent at least one wake-up request');
-  } else {
-    console.warn('All wake-up requests failed');
-  }
+//   if (success) {
+//     console.log('Successfully sent at least one wake-up request');
+//   } else {
+//     console.warn('All wake-up requests failed');
+//   }
   
-  return success;
-} 
+//   return success;
+// } 

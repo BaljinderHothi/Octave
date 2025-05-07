@@ -7,9 +7,10 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import { Recommendation } from '../types/Recommendation';
-import { getRecommendations, wakeupRenderService } from '../services/recommendationService';
+// import { getRecommendations, wakeupRenderService } from '../services/recommendationService';
+import { getRecommendations } from '../services/recommendationService';
 import { searchRecommendations } from '../services/searchService';
 import RecommendationCard from '../components/RecommendationCard';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -28,6 +29,25 @@ export default function Closed() {
   const [currentPage, setCurrentPage] = useState<{ [key: string]: number }>({});
   const [apiStatus, setApiStatus] = useState<'connected' | 'connecting' | 'down'>('connected');
   const [apiStatusMessage, setApiStatusMessage] = useState<string>('');
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  //stopwatch for loading screen on homepage
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    
+    if (loading) {
+      timer = setInterval(() => {
+        setElapsedTime(prev => prev + 1);
+      }, 1000);
+    } else if (timer) {
+      clearInterval(timer);
+      setElapsedTime(0);
+    }
+    
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [loading]);
 
   useEffect(() => {
     //debugging
@@ -216,29 +236,35 @@ export default function Closed() {
     }
   };
 
-  //function to handle API reconnection attempts
-  const handleReconnectApi = async () => {
-    setApiStatus('connecting');
-    setApiStatusMessage('Attempting to wake up the recommendation service:');
+  // //function to handle API reconnection attempts
+  // const handleReconnectApi = async () => {
+  //   setApiStatus('connecting');
+  //   setApiStatusMessage('Attempting to wake up the recommendation service:');
     
-    const success = await wakeupRenderService();
+  //   const success = await wakeupRenderService();
     
-    if (success) {
-      setApiStatusMessage('Wake-up signal sent');
-      setTimeout(() => {
-        setApiStatus('connected');
-        clearSearch();
-      }, 5000);
-    } else {
-      setApiStatus('down');
-      setApiStatusMessage('Unable to connect to the recommendation service. Please try again later.');
-    }
-  };
+  //   if (success) {
+  //     setApiStatusMessage('Wake-up signal sent');
+  //     setTimeout(() => {
+  //       setApiStatus('connected');
+  //       clearSearch();
+  //     }, 5000);
+  //   } else {
+  //     setApiStatus('down');
+  //     setApiStatusMessage('Unable to connect to the recommendation service. Please try again later.');
+  //   }
+  // };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center">
+      <div className="min-h-screen flex flex-col justify-center items-center">
         <LoadingSpinner />
+        <p className="text-center text-gray-600 mt-6 max-w-md px-4">
+          Our model is working hard to give you personalized recommendations - if they don't load properly the first time around, refresh the page after it has loaded for 60 seconds. Thank you for your patience!
+        </p>
+        <div className="text-center mt-4 text-gray-500">
+          Time elapsed: {elapsedTime}s
+        </div>
       </div>
     );
   }
@@ -300,7 +326,7 @@ export default function Closed() {
     );
   }
 
-  //group recommendations by category
+  //group recommendations by category - so all the korean recs are together, etc 
   const groupedRecommendations = recommendations.reduce((groups: { [key: string]: Recommendation[] }, rec) => {
     const category = rec.category_match || 'Other';
     if (!groups[category]) {
@@ -333,7 +359,18 @@ export default function Closed() {
     <div className="min-h-screen py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-          <h1 className="text-3xl font-bold">{isSearchResults ? 'Search Results' : 'Your Recommendations'}</h1>
+          <div className="flex items-center">
+            <h1 className="text-3xl font-bold">{isSearchResults ? 'Search Results' : 'Your Recommendations'}</h1>
+            {!isSearchResults && (
+              <div className="relative ml-2 group">
+                <Info className="h-5 w-5 text-gray-500 cursor-help" />
+                <div className="absolute left-0 top-full mt-2 hidden group-hover:block w-72 p-2 bg-black text-white text-sm rounded shadow-lg z-10">
+                  <p className="mb-1">The recommendation score is how much we think you will like this business.</p>
+                  <p>It considers how popular the business is, how highly it is rated by others on Google, and how similar it is to your current preferences.</p>
+                </div>
+              </div>
+            )}
+          </div>
           <div className="w-full md:w-auto">
             <SearchBar onSearch={handleSearch} />
           </div>
@@ -459,7 +496,7 @@ export default function Closed() {
               </div>
               {apiStatus === 'down' && (
                 <button
-                  onClick={handleReconnectApi}
+                  // onClick={handleReconnectApi}
                   className="px-3 py-1.5 text-sm font-medium text-white bg-amber-600 rounded hover:bg-amber-700"
                 >
                   Wake Up API
