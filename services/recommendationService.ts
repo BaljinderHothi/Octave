@@ -64,7 +64,7 @@ export async function getRecommendations(userId: string, preferences?: string[] 
     const requestBody = {
       user_id: userId,
       preferences: combinedPreferences,
-      top_n: 6
+      top_n: 20
     };
     
     console.log('Request Body:', JSON.stringify(requestBody, null, 2));
@@ -130,7 +130,21 @@ export async function getRecommendations(userId: string, preferences?: string[] 
       score: typeof rec.score === 'number' ? rec.score : 0
     }));
 
-    return formattedRecommendations;
+    //select 6 random from each catgeory so we can shuffle them
+    const groupedByCategory: Record<string, Recommendation[]> = formattedRecommendations.reduce((acc: Record<string, Recommendation[]>, rec: Recommendation) => {
+      const category = rec.category_match || 'Other';
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(rec);
+      return acc;
+    }, {});
+    const randomRecommendations = Object.entries(groupedByCategory).flatMap(([_, recs]) => {
+      const shuffled = [...recs].sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, 6);
+    });
+
+    return randomRecommendations.sort((a, b) => (b.score || 0) - (a.score || 0));
   } catch (error) {
     console.error('Error in getRecommendations:', error);
     return generateFallbackRecommendations(preferences);

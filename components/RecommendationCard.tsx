@@ -34,6 +34,25 @@ export default function RecommendationCard({ recommendation }: RecommendationCar
           <span className="text-yellow-400">★</span>
           <span className="ml-1 text-sm">{recommendation.rating.toFixed(1)}</span>
         </div>
+        {recommendation.score !== undefined && (
+          <div className="mb-2">
+            <div className="flex items-center">
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div 
+                  className={`h-2.5 rounded-full ${
+                    recommendation.score >= 0.8 ? 'bg-green-500' :
+                    recommendation.score >= 0.6 ? 'bg-yellow-500' :
+                    'bg-red-500'
+                  }`}
+                  style={{ width: `${recommendation.score * 100}%` }}
+                ></div>
+              </div>
+              <span className="ml-2 text-sm text-gray-600">
+                Recommendation Score: {Math.round(recommendation.score * 100)}%
+              </span>
+            </div>
+          </div>
+        )}
         <p className="text-sm text-gray-700 italic mb-2">
           {recommendation.explanation}
         </p>

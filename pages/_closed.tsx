@@ -7,7 +7,7 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RefreshCw, HelpCircle } from 'lucide-react';
 import { Recommendation } from '../types/Recommendation';
 import { getRecommendations, wakeupRenderService } from '../services/recommendationService';
 import { searchRecommendations } from '../services/searchService';
@@ -28,6 +28,7 @@ export default function Closed() {
   const [currentPage, setCurrentPage] = useState<{ [key: string]: number }>({});
   const [apiStatus, setApiStatus] = useState<'connected' | 'connecting' | 'down'>('connected');
   const [apiStatusMessage, setApiStatusMessage] = useState<string>('');
+  const [refreshCount, setRefreshCount] = useState(0);
 
   useEffect(() => {
     //debugging
@@ -99,26 +100,27 @@ export default function Closed() {
 
           console.log('Received recommendations:', recs);
           
-          //group recommendations by category
-          const groupedRecs = recs.reduce((acc: { [key: string]: Recommendation[] }, rec) => {
-            const category = rec.category_match || 'Other';
-            if (!acc[category]) {
-              acc[category] = [];
-            }
-            acc[category].push(rec);
-            return acc;
-          }, {});
+          // //group recommendations by category
+          // const groupedRecs = recs.reduce((acc: { [key: string]: Recommendation[] }, rec) => {
+          //   const category = rec.category_match || 'Other';
+          //   if (!acc[category]) {
+          //     acc[category] = [];
+          //   }
+          //   acc[category].push(rec);
+          //   return acc;
+          // }, {});
 
-          //flatten grouped recommendations back into an array
-          const organizedRecs = Object.entries(groupedRecs).flatMap(([category, recs]) => 
-            recs.map(rec => ({
-              ...rec,
-              category_match: category
-            }))
-          );
+          // //flatten grouped recommendations back into an array
+          // const organizedRecs = Object.entries(groupedRecs).flatMap(([category, recs]) => 
+          //   recs.map(rec => ({
+          //     ...rec,
+          //     category_match: category
+          //   }))
+          // );
 
-          console.log('Organized recommendations:', organizedRecs);
-          setRecommendations(organizedRecs);
+          // console.log('Organized recommendations:', organizedRecs);
+          // setRecommendations(organizedRecs);
+          setRecommendations(recs);
         }
       } catch (err) {
         console.error('Error fetching user data:', err);
@@ -163,7 +165,11 @@ export default function Closed() {
     }
 
     verifyAuth();
-  }, [router]);
+  }, [router, refreshCount]);
+
+  const handleRefresh = () => {
+    setRefreshCount(prev => prev + 1);
+  };
 
   //search functionality itself
   const handleSearch = async (query: string) => {
@@ -237,8 +243,11 @@ export default function Closed() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center">
+      <div className="min-h-screen flex flex-col justify-center items-center gap-4">
         <LoadingSpinner />
+        <p className="text-gray-600 text-center max-w-md px-4">
+          Our model is working hard to give you personalized recommendations - if they don't load properly the first time around, refresh the page after it has loaded for 60 seconds. Thank you for your patience!
+        </p>
       </div>
     );
   }
@@ -333,9 +342,29 @@ export default function Closed() {
     <div className="min-h-screen py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-          <h1 className="text-3xl font-bold">{isSearchResults ? 'Search Results' : 'Your Recommendations'}</h1>
-          <div className="w-full md:w-auto">
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold">{isSearchResults ? 'Search Results' : 'Your Recommendations'}</h1>
+            {!isSearchResults && (
+              <div className="group relative">
+                <HelpCircle size={20} className="text-gray-400 hover:text-gray-600 cursor-help" />
+                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-72 p-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                  The recommendation score is how likely we think you'll enjoy this business - it is calculated considering the overall rating of the business, how popular it is on Google, and how similar it is to your preferences.
+                  <div className="absolute left-1/2 -translate-x-1/2 -top-1 w-2 h-2 bg-gray-900 rotate-45"></div>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="w-full md:w-auto flex items-center gap-4">
             <SearchBar onSearch={handleSearch} />
+            {!isSearchResults && (
+              <button
+                onClick={handleRefresh}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <RefreshCw size={18} />
+                <span>Refresh</span>
+              </button>
+            )}
           </div>
         </div>
         
@@ -402,11 +431,18 @@ export default function Closed() {
               return (
                 <div key={category} className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-semibold text-gray-800">
-                      {isSearchResults 
-                        ? `${category} Recommendations` 
-                        : `Because you liked ${category}...`}
-                    </h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-2xl font-semibold text-gray-800">
+                        {isSearchResults 
+                          ? `${category} Recommendations` 
+                          : `Because you said you like ${category}...`}
+                      </h2>
+                      {!isSearchResults && (
+                        <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                          Based on your explicit preferences
+                        </span>
+                      )}
+                    </div>
                     {totalPages > 1 && (
                       <div className="flex items-center gap-4">
                         <button
