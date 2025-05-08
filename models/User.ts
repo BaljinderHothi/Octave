@@ -15,7 +15,6 @@ export interface IUser extends Document {
     activities: string[];
     places: string[];
     custom: string[];
-    implicitCategories: string[]; //this is for the extracted categories from Tell Us More
     additionalPreferences: string[]; //this is for the categories that are extracted when they write reviews
   };
   favorites: mongoose.Types.ObjectId[]; 
@@ -54,7 +53,6 @@ const UserSchema = new Schema(
       activities: { type: [String], default: [] },
       places: { type: [String], default: [] },
       custom: { type: [String], default: [] },
-      implicitCategories: { type: [String], default: [] },
       additionalPreferences: { type: [String], default: [] },
     },
     favorites: [{ 
