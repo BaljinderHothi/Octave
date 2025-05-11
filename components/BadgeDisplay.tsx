@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Badge } from '@/models/User';
 import Link from 'next/link';
 import { useBadges } from '@/components/BadgeContext';
+import { Award, FileEdit } from 'lucide-react';
 
 interface BadgeDisplayProps {
   badges?: Badge[];
@@ -42,12 +43,22 @@ export default function BadgeDisplay({ badges: propBadges }: BadgeDisplayProps) 
     <div className="mt-6">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-medium text-gray-900">Badges & Achievements</h3>
-        <Link
-          href="/badges"
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-        >
-          View All Badges
-        </Link>
+        <div className="flex space-x-2">
+          <Link
+            href="/badges"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+          >
+            <Award className="h-4 w-4 mr-2" />
+            View All Badges
+          </Link>
+          <Link
+            href="/myreviews"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+          >
+            <FileEdit className="h-4 w-4 mr-2" />
+            My Reviews
+          </Link>
+        </div>
       </div>
       
       {badges.length === 0 ? (

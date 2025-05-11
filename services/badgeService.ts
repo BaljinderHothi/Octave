@@ -525,7 +525,7 @@ export async function checkFirstItineraryBadge(): Promise<{ updatedBadges: Badge
     const token = localStorage.getItem('token');
     if (!token) throw new Error('No authentication token found');
     
-    const itinerariesResponse = await fetch('/api/user/itineraries', {
+    const itinerariesResponse = await fetch('/api/itineraries', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -586,7 +586,7 @@ export async function checkMultipleItinerariesBadge(): Promise<{ updatedBadges: 
     const token = localStorage.getItem('token');
     if (!token) throw new Error('No authentication token found');
     
-    const itinerariesResponse = await fetch('/api/user/itineraries', {
+    const itinerariesResponse = await fetch('/api/itineraries', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
