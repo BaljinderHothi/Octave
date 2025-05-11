@@ -38,18 +38,18 @@ async function handler(
     try {
       const { food, activity, place } = req.body;
 
-      if (!food || !activity || !place) {
+      if (!food && !activity && !place) {
         return res.status(400).json({ 
           success: false, 
-          message: 'All 3 categories (food, activity, place) are required.' 
+          message: 'At least one category (food, activity, or place) is required.' 
         });
       }
 
       const newItinerary = await Itinerary.create({
         user: userId, 
-        food, 
-        activity, 
-        place
+        food: food || '', 
+        activity: activity || '',
+        place: place || ''
       });
 
       return res.status(201).json({ 

@@ -22,17 +22,33 @@ export default function GeneratedItinerary() {
 
   const handleSaveItinerary = async () => {
     try {
+      const requestBody: { [key: string]: string | undefined } = {};
+      
+      if (selectedCategories.food && food) {
+        requestBody.food = food.name;
+      }
+      
+      if (selectedCategories.activity && activity) {
+        requestBody.activity = activity.name;
+      }
+      
+      if (selectedCategories.place && place) {
+        requestBody.place = place.name;
+      }
+      
+      // Check if at least one category is selected
+      if (Object.keys(requestBody).length === 0) {
+        alert('Please select at least one category (food, activity, or place)');
+        return;
+      }
+      
       const res = await fetch('/api/itineraries', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({
-          food: food?.name,
-          activity: activity?.name,
-          place: place?.name
-        })
+        body: JSON.stringify(requestBody)
       });
   
       const data = await res.json();
@@ -43,7 +59,7 @@ export default function GeneratedItinerary() {
         
         checkBadgesForEvent('ITINERARY_CREATED');
       } else {
-        alert(`Error saving itinerary: ${data.error || 'Unknown error'}`);
+        alert(`Error saving itinerary: ${data.message || 'Unknown error'}`);
       }
     } catch (err) {
       console.error('Failed to save itinerary:', err);

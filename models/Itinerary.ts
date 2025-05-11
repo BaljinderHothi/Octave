@@ -12,9 +12,9 @@ export interface IItinerary extends Document {
 
 const ItinerarySchema = new Schema<IItinerary>({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  food: { type: String, required: true },
-  activity: { type: String, required: true },
-  place: { type: String, required: true },
+  food: { type: String, default: '' },
+  activity: { type: String, default: '' },
+  place: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now },
 });
 
