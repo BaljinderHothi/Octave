@@ -29,7 +29,7 @@ export default async function handler(
         throw new Error('Failed to connect to database');
       }
       
-      const businessCollection = db.collection('nyc_businesses');
+      const businessCollection = db.collection('nyc_businesses_w_coordinates');
 
       const query: any = {};
 
@@ -71,12 +71,9 @@ export default async function handler(
       return res.status(200).json({
         success: true,
         data: businesses,
-        pagination: {
-          total,
-          page: pageNum,
-          limit: limitNum,
-          pages: Math.ceil(total / limitNum)
-        }
+        total,
+        page: pageNum,
+        limit: limitNum
       });
     } catch (error) {
       console.error('Error fetching businesses:', error);
