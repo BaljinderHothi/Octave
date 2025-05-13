@@ -5,6 +5,7 @@ import { Star, ThumbsUp, Trash2, Edit, ChevronDown, ChevronUp } from 'lucide-rea
 import BadgeNotification from './BadgeNotification';
 import type { Badge } from '@/models/User';
 import { useBadges } from '@/components/BadgeContext';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface User {
   _id: string;
@@ -48,6 +49,26 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const { checkBadgesForEvent } = useBadges();
+
+  const RatingsTrendChart = ({ reviews }: { reviews: Review[] }) => {
+    const data = reviews
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      .map((review, index) => ({ x: index + 1, y: review.rating }));
+
+    return (
+      <div className="mb-4">
+        <h3 className="text-xl font-semibold mb-2">Ratings Trend</h3>
+        <ResponsiveContainer width="100%" height={200}>
+          <LineChart data={data}>
+            <XAxis dataKey="x" label={{ value: 'Review Order', position: 'insideBottom', offset: -5 }} />
+            <YAxis domain={[1, 5]} label={{ value: 'Rating', angle: -90, position: 'insideLeft' }} />
+            <Tooltip formatter={(value) => `Rating: ${value}`} />
+            <Line type="monotone" dataKey="y" stroke="#8884d8" strokeWidth={2} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  };
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -320,14 +341,25 @@ export default function BusinessReviews({ businessId, businessName }: BusinessRe
   return (
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Reviews</h2>
-      
+    {/* Rating Trend Graphing Plot */}  
+    {reviews.length > 0 && <RatingsTrendChart reviews={reviews} />}
+      {loading && reviews.length === 0 ? (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading reviews...</p>
+        </div>
+      ) : reviews.length === 0 ? (
+        <div className="text-center py-8 bg-gray-50 rounded-lg">
+          <p className="text-gray-600">No reviews yet. Be the first to review!</p>
+        </div>
+      ) : null}
       {/* New Review Button */}
       {currentUser && !editingReview && (
         <div className="mb-6">
           {!showReviewForm ? (
             <button
               onClick={() => setShowReviewForm(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-black text-white rounded hover:bg-gray-700"
             >
               Write a Review
             </button>

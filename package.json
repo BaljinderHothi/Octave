@@ -25,7 +25,8 @@
     "next-auth": "^4.24.11",
     "python-shell": "^5.0.0",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "recharts": "^2.15.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",

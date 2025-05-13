@@ -44,7 +44,7 @@ export default function BadgeDisplay({ badges: propBadges }: BadgeDisplayProps) 
         <h3 className="text-lg font-medium text-gray-900">Badges & Achievements</h3>
         <Link
           href="/badges"
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-700"
         >
           View All Badges
         </Link>
