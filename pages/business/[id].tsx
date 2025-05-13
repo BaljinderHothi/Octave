@@ -74,33 +74,55 @@ export default function BusinessPage() {
   // business hours
   const formatHours = (hours: any) => {
     if (!hours || !hours[0] || !hours[0].open) return 'Hours not available';
-    
     const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    
     return hours[0].open.map((time: any) => {
-      const day = daysOfWeek[time.day];
-      const start = formatTime(time.start);
-      const end = formatTime(time.end);
-      
-      return (
-        <div key={time.day} className="flex justify-between">
-          <span className="font-medium">{day}</span>
-          <span>{start} - {end}</span>
-        </div>
-      );
+        const day = daysOfWeek[time.day];
+        const start = formatTime(time.start);
+        const end = formatTime(time.end);
+        return (
+            <div key={time.day} className="flex justify-between">
+                <span className="font-medium">{day}</span>
+                <span>{start} - {end}</span>
+            </div>
+        );
     });
-  };
+};
+
 
   const formatTime = (time: string) => {
-    if (!time || time.length !== 4) return 'N/A';
-    
-    const hours = parseInt(time.substring(0, 2));
-    const minutes = time.substring(2);
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const formattedHours = hours % 12 || 12;
-    
-    return `${formattedHours}:${minutes} ${period}`;
+    const hours = parseInt(time.slice(0, 2), 10);
+    const minutes = time.slice(2);
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const hr = hours % 12 || 12;
+    return `${hr}:${minutes} ${ampm}`;
   };
+
+  const renderHours = (business: any) => {
+    const openHours = business.hours?.[0]?.open || [];
+    const groupedByDay: { [key: number]: { start: string, end: string, is_overnight: boolean }[] } = {};
+
+    for (const entry of openHours) {
+        if (!groupedByDay[entry.day]) groupedByDay[entry.day] = [];
+        groupedByDay[entry.day].push(entry);
+    }
+
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    return (
+        <ul className="mt-2 ml-1 text-sm text-gray-700 grid grid-cols-1 gap-1">
+            {Object.entries(groupedByDay).map(([day, entries]: [string, any[]]) => (
+                <li key={day} className="flex">
+                    <span className="font-medium w-24">{daysOfWeek[parseInt(day)]}:</span>
+                    <span>
+                        {entries.map((e, idx) => `${formatTime(e.start)} – ${formatTime(e.end)}${e.is_overnight ? ' (Overnight)' : ''}`)
+                            .join(', ')}
+                    </span>
+                </li>
+            ))}
+        </ul>
+    );
+};
+
 
   // stars for rating
   const renderStars = (rating: number) => {
@@ -243,33 +265,22 @@ export default function BusinessPage() {
                     </a>
                   </div>
                 )}
-                
-                <div className="mt-4">
-                  <a
-                    href={business.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 inline-block"
-                  >
-                    Visit Website
-                  </a>
-                </div>
               </div>
               
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                  <Clock className="h-5 w-5 mr-2" />
-                  Business Hours
+                    <Clock className="h-5 w-5 mr-2" />
+                    Business Hours
                 </h3>
-                
+
                 <div className="space-y-1 text-sm">
-                  {business.hours ? (
-                    formatHours(business.hours)
-                  ) : (
-                    <p className="text-gray-600">Hours information not available</p>
-                  )}
+                    {business.hours ? (
+                        renderHours(business)
+                    ) : (
+                        <p className="text-gray-600">Hours information not available</p>
+                    )}
                 </div>
-              </div>
+            </div>
             </div>
           </div>
         </div>
