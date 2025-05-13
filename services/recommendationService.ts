@@ -11,6 +11,7 @@ interface UserPreferences {
   activities?: string[];
   places?: string[];
   custom?: string[];
+  additionalPreferences?: string[];
 }
 
 export async function getRecommendations(userId: string, preferences?: string[] | UserPreferences): Promise<Recommendation[]> {
@@ -49,6 +50,9 @@ export async function getRecommendations(userId: string, preferences?: string[] 
       if (Array.isArray(userPrefs.activities)) combinedPreferences.push(...userPrefs.activities);
       if (Array.isArray(userPrefs.places)) combinedPreferences.push(...userPrefs.places);
       if (Array.isArray(userPrefs.custom)) combinedPreferences.push(...userPrefs.custom);
+      if (Array.isArray(userPrefs.additionalPreferences)) {
+        combinedPreferences.push(...userPrefs.additionalPreferences); 
+      }
     } else if (Array.isArray(preferences)) {
       combinedPreferences = preferences;
     }
@@ -127,7 +131,10 @@ export async function getRecommendations(userId: string, preferences?: string[] 
       image_url: rec.image_url || '/placeholder-restaurant.jpg',
       category_match: rec.category_match || 'Other',
       explanation: rec.explanation || `Recommended business with ${rec.rating || 0}★ rating`,
-      score: typeof rec.score === 'number' ? rec.score : 0
+      score: typeof rec.score === 'number' ? rec.score : 0,
+      isAdditionalPreference: rec.categories.some((cat: string) => 
+        combinedPreferences.some(pref => pref.startsWith('additional:') && pref.endsWith(cat))
+      )
     }));
 
     //select 6 random from each catgeory so we can shuffle them

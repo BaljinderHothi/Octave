@@ -67,19 +67,24 @@ export default function Closed() {
         
         const userData = await response.json();
         console.log('User data received:', userData);
+        
+        localStorage.setItem('userData', JSON.stringify(userData));
 
         //extract preferences from the correct path in the response
         const preferences = userData.data.preferences;
+        const additionalPreferences = preferences?.additionalPreferences || [];
         
         //combine all preferences into a single array
         const allPreferences = [
           ...(preferences?.food || []),
           ...(preferences?.activities || []),
           ...(preferences?.places || []),
-          ...(preferences?.custom || [])
+          ...(preferences?.custom || []),
+          ...additionalPreferences
         ];
         
         console.log('Combined preferences:', allPreferences);
+        console.log('Additional preferences:', additionalPreferences);
         setUserPreferences(allPreferences);
 
         //get recommendations based on those preferences
@@ -89,7 +94,8 @@ export default function Closed() {
             food: preferences?.food || [],
             activities: preferences?.activities || [],
             places: preferences?.places || [],
-            custom: preferences?.custom || []
+            custom: preferences?.custom || [],
+            additionalPreferences: additionalPreferences
           });
           
           if (!recs || recs.length === 0) {
@@ -210,7 +216,8 @@ export default function Closed() {
         food: userPreferences.filter(p => p.startsWith('food:')),
         activities: userPreferences.filter(p => p.startsWith('activity:')),
         places: userPreferences.filter(p => p.startsWith('place:')),
-        custom: userPreferences.filter(p => !p.includes(':'))
+        custom: userPreferences.filter(p => !p.includes(':')),
+        additionalPreferences: userPreferences.filter(p => p.startsWith('additional:'))
       }).then(recs => {
         setRecommendations(recs);
         setLoading(false);
@@ -312,10 +319,39 @@ export default function Closed() {
   //group recommendations by category
   const groupedRecommendations = recommendations.reduce((groups: { [key: string]: Recommendation[] }, rec) => {
     const category = rec.category_match || 'Other';
-    if (!groups[category]) {
-      groups[category] = [];
+    //get additional preferences from user data
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const additionalPrefs = userData?.data?.preferences?.additionalPreferences || [];
+    const explicitPrefs = [
+      ...(userData?.data?.preferences?.food || []),
+      ...(userData?.data?.preferences?.activities || []),
+      ...(userData?.data?.preferences?.places || []),
+      ...(userData?.data?.preferences?.custom || [])
+    ];
+    
+    const isAdditionalPreference = additionalPrefs.some((pref: string) => 
+      category.toLowerCase() === pref.toLowerCase()
+    );
+    
+    //if the category exists in both explicit and additional preferences,
+    //use the recommendation's source to determine which group it belongs to
+    const isExplicitPreference = explicitPrefs.some((pref: string) => 
+      category.toLowerCase() === pref.toLowerCase()
+    );
+    
+    let groupKey = category;
+    if (isAdditionalPreference && !isExplicitPreference) {
+      groupKey = `${category} (Additional)`;
+    } else if (isAdditionalPreference && isExplicitPreference) {
+      //if it's in both, check if this specific recommendation came from additional preferences
+      const isFromAdditional = rec.isAdditionalPreference;
+      groupKey = isFromAdditional ? `${category} (Additional)` : category;
     }
-    groups[category].push(rec);
+    
+    if (!groups[groupKey]) {
+      groups[groupKey] = [];
+    }
+    groups[groupKey].push(rec);
     return groups;
   }, {});
 
@@ -422,9 +458,18 @@ export default function Closed() {
         ) : (
           <div className="space-y-12">
 {/* pagination for recommendations */}
-            {Object.entries(groupedRecommendations).map(([category, recs]) => {
+            {Object.entries(groupedRecommendations)
+              .sort(([categoryA], [categoryB]) => {
+                //sort additional preferences first
+                const isAdditionalA = categoryA.includes('(Additional)');
+                const isAdditionalB = categoryB.includes('(Additional)');
+                if (isAdditionalA && !isAdditionalB) return -1;
+                if (!isAdditionalA && isAdditionalB) return 1;
+                return 0;
+              })
+              .map(([category, recs]) => {
               const pageIndex = currentPage[category] || 0;
-              const itemsPerPage = isSearchResults ? 4 : 3; // Show more items per page for search results
+              const itemsPerPage = isSearchResults ? 4 : 3; 
               const totalPages = Math.ceil(recs.length / itemsPerPage);
               const displayedRecs = recs.slice(pageIndex * itemsPerPage, pageIndex * itemsPerPage + itemsPerPage);
 
@@ -435,11 +480,19 @@ export default function Closed() {
                       <h2 className="text-2xl font-semibold text-gray-800">
                         {isSearchResults 
                           ? `${category} Recommendations` 
-                          : `Because you said you like ${category}...`}
+                          : category.includes('(Additional)')
+                            ? `Because you recently reviewed a/an ${category.replace(' (Additional)', '')} business positively...`
+                            : `Because you said you like ${category}...`}
                       </h2>
                       {!isSearchResults && (
-                        <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                          Based on your explicit preferences
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          category.includes('(Additional)')
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {category.includes('(Additional)')
+                            ? 'Based on your recent positive reviews'
+                            : 'Based on your explicit preferences'}
                         </span>
                       )}
                     </div>
