@@ -401,6 +401,22 @@ export default function RandomItinerary() {
             </div>
           </div>
           
+          <div className="flex gap-4 mt-4 mb-4">
+            <button
+              onClick={generateRandom}
+              className="bg-black hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium flex items-center transition-colors text-sm"
+            >
+              <RefreshCw size={16} className="mr-2" />
+              Regenerate Full Itinerary
+            </button>
+            <button
+              onClick={handleSaveItinerary}
+              className="bg-black hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium flex items-center transition-colors text-sm"
+            >
+              Save Itinerary to Wishlist
+            </button>
+          </div>
+          
           {selectedLocation && (
             <div className="mt-2 text-sm text-gray-600 flex items-center">
               <MapPin size={16} className="mr-1 text-indigo-600" />
@@ -457,22 +473,6 @@ export default function RandomItinerary() {
               onGenerate={() => setPlace(pickStrict(filteredBusinesses, placeAliases, foodAliases, activityAliases))}
             />
           )}
-        </div>
-
-        <div className="mt-6 flex justify-center gap-20">
-          <button
-            onClick={generateRandom}
-            className="bg-black hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium flex items-center transition-colors"
-          >
-            <RefreshCw size={18} className="mr-2" />
-            Regenerate Full Itinerary
-          </button>
-          <button
-            onClick={handleSaveItinerary}
-            className="bg-black hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium flex items-center transition-colors"
-          >
-            Save Itinerary to Wishlist
-          </button>
         </div>
       </div>
     </div>
