@@ -226,21 +226,36 @@ export default function RandomItinerary() {
     setFilterRadius(radius);
     
     if (businesses.length > 0) {
+      console.log('Filtering businesses with radius:', radius, 'miles');
+      console.log('Selected location:', lngLat);
+      
       const filtered = businesses.filter(business => {
-        if (!business.coordinates?.latitude || !business.coordinates?.longitude) return false;
+        if (!business.latitude || !business.longitude) {
+          console.log('Business missing coordinates:', business.name);
+          return false;
+        }
         
         const distance = calculateDistance(
-          business.coordinates.latitude,
-          business.coordinates.longitude,
+          business.latitude,
+          business.longitude,
           lngLat.lat,
           lngLat.lng
         );
         
+        console.log(`Distance for ${business.name}: ${distance.toFixed(2)} miles`);
         return distance <= radius;
       });
       
-      setFilteredBusinesses(filtered.length > 0 ? filtered : businesses);
-      generateRandomWithFiltered(filtered.length > 0 ? filtered : businesses);
+      console.log(`Found ${filtered.length} businesses within ${radius} miles`);
+      
+      if (filtered.length > 0) {
+        setFilteredBusinesses(filtered);
+        generateRandomWithFiltered(filtered);
+      } else {
+        console.log('No businesses found within radius, showing all businesses');
+        setFilteredBusinesses(businesses);
+        generateRandomWithFiltered(businesses);
+      }
     }
   };
   useEffect(() => {

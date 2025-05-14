@@ -117,7 +117,7 @@ export default function GeneratedItinerary() {
       Math.sin(dLon/2) * Math.sin(dLon/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     const distance = R * c;
-    return distance;
+    return Number(distance.toFixed(2)); 
   };
 
 
@@ -264,26 +264,41 @@ export default function GeneratedItinerary() {
     setSelectedLocation(lngLat);
     setFilterRadius(radius);
     
-
     if (businesses.length > 0) {
+      console.log('Filtering businesses with radius:', radius, 'miles');
+      console.log('Selected location:', lngLat);
+      
+      //filter businesses that are within the radius
       const filtered = businesses.filter(business => {
-        if (!business.coordinates?.latitude || !business.coordinates?.longitude) return false;
+        if (!business.latitude || !business.longitude) {
+          console.log('Business missing coordinates:', business.name);
+          return false;
+        }
         
         const distance = calculateDistance(
-          business.coordinates.latitude,
-          business.coordinates.longitude,
+          business.latitude,
+          business.longitude,
           lngLat.lat,
           lngLat.lng
         );
         
+        console.log(`Distance for ${business.name}: ${distance.toFixed(2)} miles`);
         return distance <= radius;
       });
       
-      setFilteredBusinesses(filtered.length > 0 ? filtered : businesses);
-  
-      generateRandomWithFiltered(filtered.length > 0 ? filtered : businesses);
+      console.log(`Found ${filtered.length} businesses within ${radius} miles`);
+      
+      if (filtered.length > 0) {
+        setFilteredBusinesses(filtered);
+        generateRandomWithFiltered(filtered);
+      } else {
+        console.log('No businesses found within radius, showing all businesses');
+        setFilteredBusinesses(businesses);
+        generateRandomWithFiltered(businesses);
+      }
     }
   };
+
   useEffect(() => {
     if (selectedLocation) {
       handleSelectLocation(selectedLocation, filterRadius);
@@ -409,9 +424,13 @@ export default function GeneratedItinerary() {
               <div className="mt-1 text-sm text-gray-600 flex">
                 <MapPin size={14} className="mr-1 mt-1 flex-shrink-0" />
                   <div>
-                    {item.address.map((line: string, idx: number) => (
-                      <p key={idx}>{line}</p>
-                    ))}
+                    {Array.isArray(item.address) ? (
+                      item.address.map((line: string, idx: number) => (
+                        <p key={idx}>{line}</p>
+                      ))
+                    ) : (
+                      <p>{item.address}</p>
+                    )}
                 </div>
                   </div>
                 )}
