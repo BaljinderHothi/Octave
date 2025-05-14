@@ -25,6 +25,7 @@ interface UserProfile {
     activities: string[];
     places: string[];
     custom: string[];
+    additionalPreferences?: string[];
   };
   favorites: any[];
   wishlist: any[];
@@ -327,6 +328,68 @@ export default function Profile() {
                 </div>
               </div>
             </div>
+
+            {profile.preferences.additionalPreferences && profile.preferences.additionalPreferences.length > 0 && (
+              <div className="mt-6">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="text-sm font-medium text-gray-900">Based on Your Recent Positive Reviews</h4>
+                    <button
+                      onClick={async () => {
+                        const confirmed = window.confirm('Are you sure you want to clear your categories extracted from your recent positive reviews?');
+                        if (!confirmed) return;
+
+                        const token = localStorage.getItem('token');
+                        if (!token) return;
+
+                        try {
+                          const response = await fetch('/api/user/clear-additional-preferences', {
+                            method: 'POST',
+                            headers: {
+                              'Authorization': `Bearer ${token}`
+                            }
+                          });
+
+                          if (!response.ok) {
+                            throw new Error('Failed to clear additional preferences');
+                          }
+
+                          setProfile(prev => {
+                            if (!prev) return null;
+                            return {
+                              ...prev,
+                              preferences: {
+                                ...prev.preferences,
+                                additionalPreferences: []
+                              }
+                            };
+                          });
+                        } catch (err) {
+                          console.error('Error clearing additional preferences:', err);
+                          alert('Failed to clear additional preferences. Please try again.');
+                        }
+                      }}
+                      className="text-sm text-red-600 hover:text-red-800 font-medium group relative"
+                    >
+                      Clear
+                      <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                        Press to clear the categories extracted from your recent positive reviews to tidy up your recommendations page
+                      </span>
+                    </button>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {profile.preferences.additionalPreferences.map((item, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-800"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Custom Preferences */}
             {profile.preferences.custom.length > 0 && (
