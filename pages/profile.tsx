@@ -122,8 +122,8 @@ export default function Profile() {
     })
       .then(res => res.json())
       .then(data => {
-        if (data.itineraries) {
-          setItineraries(data.itineraries);
+        if (data.data && data.data.itineraries) {
+          setItineraries(data.data.itineraries);
         }
       })
       .catch(err => console.error('Failed to load itineraries:', err));
@@ -456,36 +456,73 @@ export default function Profile() {
               </div>
 
               {/* Wishlist */}
-              <div className="mt-4">
-                <h2 className="text-lg font-semibold mb-2">Wishlist</h2>
-                {Object.entries(grouped).map(([month, items]) => (
-                  <div key={month} className="mb-4 border rounded-lg">
-                    <button
-                      onClick={() => toggleGroup(month)}
-                      className="w-full px-4 py-2 text-left font-medium bg-gray-100 hover:bg-gray-200 transition"
-                    >
-                      {month} ({items.length} saved)
-                    </button>
-                    {openGroups[month] && (
-                      <div className="px-4 py-2 divide-y divide-gray-200 transition-all duration-300">
-                        {items.map((item, idx) => (
-                          <div key={idx} className="py-3">
-                            <p><strong>Food:</strong> {item.food}</p>
-                            <p><strong>Activity:</strong> {item.activity}</p>
-                            <p><strong>Place:</strong> {item.place}</p>
-                            <button
-                              onClick={() => handleDelete(item._id)}
-                              className="text-red-500 hover:text-red-700 p-1"
-                              title="Delete"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
+              <div className="border rounded-lg p-4">
+                <h2 className="text-sm font-medium text-gray-900 mb-2">Wishlist</h2>
+                {Object.keys(grouped).length > 0 ? (
+                  Object.entries(grouped).map(([month, items]) => (
+                    <div key={month} className="mb-4 border-t pt-2">
+                      <button
+                        onClick={() => toggleGroup(month)}
+                        className="w-full px-2 py-1 text-left font-medium bg-gray-100 hover:bg-gray-200 transition rounded"
+                      >
+                        {month} ({items.length} saved)
+                      </button>
+                      {openGroups[month] && (
+                        <div className="px-2 py-2 divide-y divide-gray-200 transition-all duration-300">
+                          {items.map((item, idx) => (
+                            <div key={idx} className="py-2">
+                              {item.food && (
+                                <p className="text-sm">
+                                  <strong>Food:</strong>{' '}
+                                  {item.foodId ? (
+                                    <Link href={`/business/${item.foodId}`} className="text-blue-600 hover:underline">
+                                      {item.food}
+                                    </Link>
+                                  ) : (
+                                    item.food
+                                  )}
+                                </p>
+                              )}
+                              {item.activity && (
+                                <p className="text-sm">
+                                  <strong>Activity:</strong>{' '}
+                                  {item.activityId ? (
+                                    <Link href={`/business/${item.activityId}`} className="text-blue-600 hover:underline">
+                                      {item.activity}
+                                    </Link>
+                                  ) : (
+                                    item.activity
+                                  )}
+                                </p>
+                              )}
+                              {item.place && (
+                                <p className="text-sm">
+                                  <strong>Place:</strong>{' '}
+                                  {item.placeId ? (
+                                    <Link href={`/business/${item.placeId}`} className="text-blue-600 hover:underline">
+                                      {item.place}
+                                    </Link>
+                                  ) : (
+                                    item.place
+                                  )}
+                                </p>
+                              )}
+                              <button
+                                onClick={() => handleDelete(item._id)}
+                                className="text-red-500 hover:text-red-700 p-1"
+                                title="Delete"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No saved itineraries yet</p>
+                )}
               </div>
             </div>
           </div>

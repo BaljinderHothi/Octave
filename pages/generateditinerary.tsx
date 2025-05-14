@@ -26,14 +26,17 @@ export default function GeneratedItinerary() {
       
       if (selectedCategories.food && food) {
         requestBody.food = food.name;
+        requestBody.foodId = food.id;
       }
       
       if (selectedCategories.activity && activity) {
         requestBody.activity = activity.name;
+        requestBody.activityId = activity.id;
       }
       
       if (selectedCategories.place && place) {
         requestBody.place = place.name;
+        requestBody.placeId = place.id;
       }
       
       // Check if at least one category is selected
