@@ -36,7 +36,7 @@ async function handler(
   //create new itinerary
   if (req.method === 'POST') {
     try {
-      const { food, activity, place } = req.body;
+      const { food, foodId, activity, activityId, place, placeId } = req.body;
 
       if (!food && !activity && !place) {
         return res.status(400).json({ 
@@ -48,8 +48,11 @@ async function handler(
       const newItinerary = await Itinerary.create({
         user: userId, 
         food: food || '', 
+        foodId: foodId || '',
         activity: activity || '',
-        place: place || ''
+        activityId: activityId || '',
+        place: place || '',
+        placeId: placeId || ''
       });
 
       return res.status(201).json({ 

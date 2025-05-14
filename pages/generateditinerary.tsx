@@ -26,14 +26,17 @@ export default function GeneratedItinerary() {
       
       if (selectedCategories.food && food) {
         requestBody.food = food.name;
+        requestBody.foodId = food.id;
       }
       
       if (selectedCategories.activity && activity) {
         requestBody.activity = activity.name;
+        requestBody.activityId = activity.id;
       }
       
       if (selectedCategories.place && place) {
         requestBody.place = place.name;
+        requestBody.placeId = place.id;
       }
       
       // Check if at least one category is selected
@@ -469,8 +472,15 @@ export default function GeneratedItinerary() {
         </button>
 
         <div className="flex flex-col items-start mb-6">
-          <h1 className="text-2xl font-bold">Personalized Itinerary</h1>
-          
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold">Personalized Itinerary</h1>
+            <div className="relative group">
+              <div className="cursor-help text-indigo-500 rounded-full border border-indigo-500 w-5 h-5 flex items-center justify-center">?</div>
+              <div className="absolute z-20 bg-white p-3 rounded-lg shadow-lg w-72 text-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 left-0 top-full mt-2">
+                <p className="text-gray-600">Recommendations based on your preferences. We match your food, activity, and place preferences to find the best options for you.</p>
+              </div>
+            </div>
+          </div>
 
           <div className="mt-2 text-sm text-gray-600">
             <div className="flex items-center">
