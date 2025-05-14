@@ -26,6 +26,7 @@ interface UserProfile {
     places: string[];
     custom: string[];
     additionalPreferences?: string[];
+    implicitCategories?: string[];
   };
   favorites: any[];
   wishlist: any[];
@@ -338,6 +339,25 @@ export default function Profile() {
               </div>
             </div>
 
+                        {/* Implicit Categories */}
+                        {profile.preferences.implicitCategories && profile.preferences.implicitCategories.length > 0 && (
+              <div className="mt-6">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Based on Your Preferences Analysis</h4>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {profile.preferences.implicitCategories.map((item, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {profile.preferences.additionalPreferences && profile.preferences.additionalPreferences.length > 0 && (
               <div className="mt-6">
                 <div className="bg-gray-50 rounded-lg p-4">
@@ -399,6 +419,8 @@ export default function Profile() {
                 </div>
               </div>
             )}
+
+
 
             {/* Custom Preferences */}
             {profile.preferences.custom.length > 0 && (

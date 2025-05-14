@@ -10,6 +10,7 @@ export interface Recommendation {
   explanation: string;
   score?: number;
   isAdditionalPreference?: boolean;
+  isImplicitPreference?: boolean;
 }
 
 //structure of api response when fetching recommendations
