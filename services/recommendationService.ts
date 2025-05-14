@@ -7,14 +7,15 @@ const RENDER_API_URL = 'https://octavemodel.onrender.com';
 // const RENDER_API_URL = 'http://127.0.0.1:5001';
 
 interface UserPreferences {
-  food?: string[];
-  activities?: string[];
-  places?: string[];
-  custom?: string[];
-  additionalPreferences?: string[];
+  food: string[];
+  activities: string[];
+  places: string[];
+  custom: string[];
+  additionalPreferences: string[];
+  implicitCategories: string[];
 }
 
-export async function getRecommendations(userId: string, preferences?: string[] | UserPreferences): Promise<Recommendation[]> {
+export async function getRecommendations(userId: string, preferences: UserPreferences): Promise<Recommendation[]> {
   const token = localStorage.getItem('token');
   
   try {
@@ -52,6 +53,9 @@ export async function getRecommendations(userId: string, preferences?: string[] 
       if (Array.isArray(userPrefs.custom)) combinedPreferences.push(...userPrefs.custom);
       if (Array.isArray(userPrefs.additionalPreferences)) {
         combinedPreferences.push(...userPrefs.additionalPreferences); 
+      }
+      if (Array.isArray(userPrefs.implicitCategories)) {
+        combinedPreferences.push(...userPrefs.implicitCategories.map(cat => `${cat}`));
       }
     } else if (Array.isArray(preferences)) {
       combinedPreferences = preferences;
@@ -134,6 +138,9 @@ export async function getRecommendations(userId: string, preferences?: string[] 
       score: typeof rec.score === 'number' ? rec.score : 0,
       isAdditionalPreference: rec.categories.some((cat: string) => 
         combinedPreferences.some(pref => pref.startsWith('additional:') && pref.endsWith(cat))
+      ),
+      isImplicitPreference: rec.categories.some((cat: string) => 
+        combinedPreferences.some(pref => pref.startsWith('implicit:') && pref.endsWith(cat))
       )
     }));
 

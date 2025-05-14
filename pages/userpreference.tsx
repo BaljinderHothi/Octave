@@ -122,12 +122,31 @@ export default function UserPreference() {
         throw new Error('No authentication token found')
       }
 
+      //analyze Tell Us More
+      if (form.tellUsMore.trim()) {
+        try {
+          const analysisResponse = await fetch('/api/user/analyze-text', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              text: form.tellUsMore
+            })
+          });
+
+          const analysisData = await analysisResponse.json();
+          console.log('Implicit categories:', analysisData.recommendations);
+        } catch (err) {
+          console.error('Error analyzing text:', err);
+        }
+      }
 
       //make sure no duplicates happen when combining the checklist and custom preferences
       const uniqueFood = Array.from(new Set<string>([...form.food, ...form.otherFoodList]))
       const uniqueActivities = Array.from(new Set<string>([...form.activity, ...form.otherActivityList]))
       const uniquePlaces = Array.from(new Set<string>([...form.places, ...form.otherPlacesList]))
-
 
       const response = await fetch('/api/user/preferences', {
         method: 'PUT',
@@ -156,7 +175,6 @@ export default function UserPreference() {
 
       alert('Preferences saved successfully!')
       
-
       router.push('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save preferences')

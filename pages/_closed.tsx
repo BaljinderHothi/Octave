@@ -73,6 +73,7 @@ export default function Closed() {
         //extract preferences from the correct path in the response
         const preferences = userData.data.preferences;
         const additionalPreferences = preferences?.additionalPreferences || [];
+        const implicitCategories = preferences?.implicitCategories || [];
         
         //combine all preferences into a single array
         const allPreferences = [
@@ -80,11 +81,13 @@ export default function Closed() {
           ...(preferences?.activities || []),
           ...(preferences?.places || []),
           ...(preferences?.custom || []),
-          ...additionalPreferences
+          ...additionalPreferences,
+          ...implicitCategories
         ];
         
         console.log('Combined preferences:', allPreferences);
         console.log('Additional preferences:', additionalPreferences);
+        console.log('Implicit categories:', implicitCategories);
         setUserPreferences(allPreferences);
 
         //get recommendations based on those preferences
@@ -95,7 +98,8 @@ export default function Closed() {
             activities: preferences?.activities || [],
             places: preferences?.places || [],
             custom: preferences?.custom || [],
-            additionalPreferences: additionalPreferences
+            additionalPreferences: additionalPreferences,
+            implicitCategories: implicitCategories
           });
           
           if (!recs || recs.length === 0) {
@@ -105,27 +109,6 @@ export default function Closed() {
           }
 
           console.log('Received recommendations:', recs);
-          
-          // //group recommendations by category
-          // const groupedRecs = recs.reduce((acc: { [key: string]: Recommendation[] }, rec) => {
-          //   const category = rec.category_match || 'Other';
-          //   if (!acc[category]) {
-          //     acc[category] = [];
-          //   }
-          //   acc[category].push(rec);
-          //   return acc;
-          // }, {});
-
-          // //flatten grouped recommendations back into an array
-          // const organizedRecs = Object.entries(groupedRecs).flatMap(([category, recs]) => 
-          //   recs.map(rec => ({
-          //     ...rec,
-          //     category_match: category
-          //   }))
-          // );
-
-          // console.log('Organized recommendations:', organizedRecs);
-          // setRecommendations(organizedRecs);
           setRecommendations(recs);
         }
       } catch (err) {
@@ -212,12 +195,16 @@ export default function Closed() {
     const userId = localStorage.getItem('userId');
     if (userId) {
       setLoading(true);
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const preferences = userData?.data?.preferences || {};
+      
       getRecommendations(userId, {
         food: userPreferences.filter(p => p.startsWith('food:')),
         activities: userPreferences.filter(p => p.startsWith('activity:')),
         places: userPreferences.filter(p => p.startsWith('place:')),
         custom: userPreferences.filter(p => !p.includes(':')),
-        additionalPreferences: userPreferences.filter(p => p.startsWith('additional:'))
+        additionalPreferences: userPreferences.filter(p => p.startsWith('additional:')),
+        implicitCategories: preferences.implicitCategories || []
       }).then(recs => {
         setRecommendations(recs);
         setLoading(false);
@@ -322,6 +309,7 @@ export default function Closed() {
     //get additional preferences from user data
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const additionalPrefs = userData?.data?.preferences?.additionalPreferences || [];
+    const implicitPrefs = userData?.data?.preferences?.implicitCategories || [];
     const explicitPrefs = [
       ...(userData?.data?.preferences?.food || []),
       ...(userData?.data?.preferences?.activities || []),
@@ -330,6 +318,10 @@ export default function Closed() {
     ];
     
     const isAdditionalPreference = additionalPrefs.some((pref: string) => 
+      category.toLowerCase() === pref.toLowerCase()
+    );
+
+    const isImplicitPreference = implicitPrefs.some((pref: string) => 
       category.toLowerCase() === pref.toLowerCase()
     );
     
@@ -342,10 +334,17 @@ export default function Closed() {
     let groupKey = category;
     if (isAdditionalPreference && !isExplicitPreference) {
       groupKey = `${category} (Additional)`;
-    } else if (isAdditionalPreference && isExplicitPreference) {
+    } else if (isImplicitPreference && !isExplicitPreference && !isAdditionalPreference) {
+      groupKey = `${category} (Implicit)`;
+    } else if ((isAdditionalPreference || isImplicitPreference) && isExplicitPreference) {
       //if it's in both, check if this specific recommendation came from additional preferences
       const isFromAdditional = rec.isAdditionalPreference;
-      groupKey = isFromAdditional ? `${category} (Additional)` : category;
+      const isFromImplicit = rec.isImplicitPreference;
+      if (isFromAdditional) {
+        groupKey = `${category} (Additional)`;
+      } else if (isFromImplicit) {
+        groupKey = `${category} (Implicit)`;
+      }
     }
     
     if (!groups[groupKey]) {
@@ -460,11 +459,16 @@ export default function Closed() {
 {/* pagination for recommendations */}
             {Object.entries(groupedRecommendations)
               .sort(([categoryA], [categoryB]) => {
-                //sort additional preferences first
+                //sort additional and implicit preferences first
                 const isAdditionalA = categoryA.includes('(Additional)');
                 const isAdditionalB = categoryB.includes('(Additional)');
+                const isImplicitA = categoryA.includes('(Implicit)');
+                const isImplicitB = categoryB.includes('(Implicit)');
+                
                 if (isAdditionalA && !isAdditionalB) return -1;
                 if (!isAdditionalA && isAdditionalB) return 1;
+                if (isImplicitA && !isImplicitB) return -1;
+                if (!isImplicitA && isImplicitB) return 1;
                 return 0;
               })
               .map(([category, recs]) => {
@@ -482,17 +486,23 @@ export default function Closed() {
                           ? `${category} Recommendations` 
                           : category.includes('(Additional)')
                             ? `Because you recently reviewed a/an ${category.replace(' (Additional)', '')} business positively...`
-                            : `Because you said you like ${category}...`}
+                            : category.includes('(Implicit)')
+                              ? `We thought you might like these ${category.replace(' (Implicit)', '')} businesses...`
+                              : `Because you said you like ${category}...`}
                       </h2>
                       {!isSearchResults && (
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                           category.includes('(Additional)')
                             ? 'bg-blue-100 text-blue-800'
-                            : 'bg-green-100 text-green-800'
+                            : category.includes('(Implicit)')
+                              ? 'bg-purple-100 text-purple-800'
+                              : 'bg-green-100 text-green-800'
                         }`}>
                           {category.includes('(Additional)')
                             ? 'Based on your recent positive reviews'
-                            : 'Based on your explicit preferences'}
+                            : category.includes('(Implicit)')
+                              ? 'Based on your preferences analysis'
+                              : 'Based on your explicit preferences'}
                         </span>
                       )}
                     </div>
