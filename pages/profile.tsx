@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { Settings, ArrowLeft, Camera, CircleUserRound } from 'lucide-react';
+import { Settings, ArrowLeft, Camera, CircleUserRound, UserCog } from 'lucide-react';
 import Image from 'next/image';
 import BadgeDisplay from '@/components/BadgeDisplay';  
 import type { Badge } from '@/models/User';
@@ -61,7 +61,7 @@ export default function Profile() {
     if (!token) return;
   
     try {
-      const res = await fetch(`/api/user/itineraries?id=${id}`, {
+      const res = await fetch(`/api/itineraries?id=${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`
@@ -114,7 +114,7 @@ export default function Profile() {
     const token = localStorage.getItem('token');
     if (!token) return;
   
-    fetch('/api/user/itineraries', {
+    fetch('/api/itineraries', {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -215,13 +215,22 @@ export default function Profile() {
               </button>
               <h2 className="text-2xl font-bold text-gray-900">Profile</h2>
             </div>
-            <Link
-              href="/userpreference"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-700"
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              Edit Preferences
-            </Link>
+            <div className="flex space-x-2">
+              <Link
+                href="/userpreference"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-700"
+              >
+                <UserCog className="h-4 w-4 mr-2" />
+                Edit Preferences
+              </Link>
+              <Link
+                href="/usersettings"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-700"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </Link>
+            </div>
           </div>
 
           {/* Profile Info */}
