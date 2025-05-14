@@ -21,7 +21,7 @@ async function handler(
       const itineraries = await Itinerary.find({ user: userId }).sort({ createdAt: -1 });
       return res.status(200).json({ 
         success: true, 
-        itineraries 
+        data: { itineraries }
       });
     } catch (error: any) {
       console.error('Error fetching itineraries:', error);

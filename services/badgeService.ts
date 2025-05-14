@@ -534,7 +534,7 @@ export async function checkFirstItineraryBadge(): Promise<{ updatedBadges: Badge
     if (!itinerariesResponse.ok) throw new Error('Failed to fetch user itineraries');
     
     const itinerariesData = await itinerariesResponse.json();
-    const userItineraries = itinerariesData.itineraries || [];
+    const userItineraries = itinerariesData.data?.itineraries || [];
     const itineraryCount = userItineraries.length;
     
     const badgesResponse = await fetch('/api/user/badges', {
@@ -595,7 +595,7 @@ export async function checkMultipleItinerariesBadge(): Promise<{ updatedBadges: 
     if (!itinerariesResponse.ok) throw new Error('Failed to fetch user itineraries');
     
     const itinerariesData = await itinerariesResponse.json();
-    const userItineraries = itinerariesData.itineraries || [];
+    const userItineraries = itinerariesData.data?.itineraries || [];
     const itineraryCount = userItineraries.length;
     
     const badgesResponse = await fetch('/api/user/badges', {
