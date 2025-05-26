@@ -18,7 +18,7 @@ async function handler(
       return res.status(400).json({ message: 'Text is required' });
     }
 
-    const response = await fetch('https://implicitcategories.onrender.com/api/recommend', {
+    const response = await fetch('https://implicitcategories-w5ok.onrender.com/api/recommend', {
 
     // const response = await fetch('http://127.0.0.1:5000/api/recommend', {
       method: 'POST',
