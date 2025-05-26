@@ -3,7 +3,9 @@
 
 import { Recommendation, RecommendationResponse } from '../types/Recommendation';
 
-const RENDER_API_URL = 'https://octavemodel.onrender.com';
+const RENDER_API_URL = 'https://octavemodel-ukap.onrender.com';
+
+//const RENDER_API_URL = 'https://octavemodel.onrender.com';
 // const RENDER_API_URL = 'http://127.0.0.1:5001';
 
 interface UserPreferences {
