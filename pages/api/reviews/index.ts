@@ -119,7 +119,8 @@ async function handler(
       //read the rating and text, then put those additionalPreferences into the database
       try {
         // const preferenceApiUrl = "http://127.0.0.1:5005";
-        const preferenceApiUrl = "https://octavesentimentanalysis.onrender.com";
+        // const preferenceApiUrl = "https://octavesentimentanalysis.onrender.com";
+        const preferenceApiUrl = "https://octavesentimentanalysis-i15w.onrender.com";
 
   
         console.log('Calling preference API at:', preferenceApiUrl);
