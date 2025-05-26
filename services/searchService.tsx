@@ -1,6 +1,8 @@
 import { Recommendation } from '../types/Recommendation';
 
-const API_BASE_URL = 'https://octavemodel.onrender.com';
+const API_BASE_URL = 'https://octavemodel-ukap.onrender.com';
+
+//const API_BASE_URL = 'https://octavemodel.onrender.com';
 // const API_BASE_URL = 'http://127.0.0.1:5001';
 
 
